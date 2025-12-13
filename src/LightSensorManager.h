@@ -87,16 +87,34 @@ private:
                     _brightnessCallback(_currentAverage5Sec);
                 }
 
-                // Screen-off logic DISABLED for testing
+                // Only check for screen-off when screen is ON
+                // Check periodically (every 500ms) to avoid constant state changes
+                if (_screenOn && (now - _lastScreenCheckTime >= SCREEN_CHECK_INTERVAL_MS)) {
+                    _lastScreenCheckTime = now;
+                    
+                    if (_latestRawReading < DARKNESS_THRESHOLD) {
+                        // Start tracking bright light detection
+                        if (_brightLightStartTime == 0) {
+                            _brightLightStartTime = now;
+                        }
+                        // Turn off only after 2 seconds of sustained bright light
+                        if (now - _brightLightStartTime >= BRIGHT_LIGHT_DEBOUNCE_MS) {
+                            turnScreenOff();
+                            _brightLightStartTime = 0;  // Reset timer
+                        }
+                    } else {
+                        // Reading is back above threshold, reset timer
+                        _brightLightStartTime = 0;
+                    }
+                }
                 // When screen is off, don't check brightness - wait for touch to wake
 
                 // Debug: print values every 2 seconds
                 if (now - lastDebugPrint >= 2000) {
                     lastDebugPrint = now;
-                    // DEBUG OUTPUT DISABLED
-                    // Serial.printf("DEBUG Light: raw=%d, avg5s=%d, avg10s=%d, threshold=%d, screen=%s\n", 
-                    //     newSample, _currentAverage5Sec, _currentAverage10Sec, DARKNESS_THRESHOLD,
-                    //     _screenOn ? "ON" : "OFF");
+                    Serial.printf("DEBUG Light: raw=%d, avg5s=%d, avg10s=%d, threshold=%d, screen=%s\n", 
+                        newSample, _currentAverage5Sec, _currentAverage10Sec, DARKNESS_THRESHOLD,
+                        _screenOn ? "ON" : "OFF");
                 }
             }
 
