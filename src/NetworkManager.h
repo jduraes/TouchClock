@@ -53,43 +53,68 @@ public:
         if (storedSSID.length() > 0) {
             Serial.print("Found stored credentials for: ");
             Serial.println(storedSSID);
-            if (_display) _display->showStatus("Connecting to " + storedSSID + "...");
             
-            WiFi.mode(WIFI_STA);
-            WiFi.begin(storedSSID.c_str(), storedPass.c_str());
+            // Try up to 3 times with 10-second timeout each, resetting WiFi between attempts
+            const int maxRetries = 3;
+            const int timeoutSeconds = 10;
             
-            // Wait up to 30 seconds with progress display
-            int attempts = 0;
-            const int maxAttempts = 30;
-            while (WiFi.status() != WL_CONNECTED && attempts < maxAttempts) {
-                delay(1000);
-                attempts++;
+            for (int attempt = 1; attempt <= maxRetries; attempt++) {
+                Serial.print("Connection attempt ");
+                Serial.print(attempt);
+                Serial.print("/");
+                Serial.println(maxRetries);
+                
                 if (_display) {
-                    String progress = "WiFi: " + storedSSID + " (" + String(attempts) + "/" + String(maxAttempts) + "s)";
-                    _display->showStatus(progress);
+                    _display->showStatus("WiFi: " + storedSSID + " (attempt " + String(attempt) + "/" + String(maxRetries) + ")");
                 }
-                Serial.print(".");
+                
+                WiFi.mode(WIFI_STA);
+                WiFi.begin(storedSSID.c_str(), storedPass.c_str());
+                
+                // Wait up to 10 seconds for connection
+                int elapsedSeconds = 0;
+                while (WiFi.status() != WL_CONNECTED && elapsedSeconds < timeoutSeconds) {
+                    delay(1000);
+                    elapsedSeconds++;
+                    if (_display) {
+                        String progress = "WiFi: " + storedSSID + " (" + String(elapsedSeconds) + "/" + String(timeoutSeconds) + "s)";
+                        _display->showStatus(progress);
+                    }
+                    Serial.print(".");
+                }
+                Serial.println();
+                
+                if (WiFi.status() == WL_CONNECTED) {
+                    Serial.print("Connected! IP: ");
+                    Serial.println(WiFi.localIP());
+                    return true;
+                } else {
+                    Serial.print("Connection failed, attempt ");
+                    Serial.print(attempt);
+                    Serial.println(" unsuccessful");
+                    
+                    // Reset WiFi for next attempt (except after last attempt)
+                    if (attempt < maxRetries) {
+                        WiFi.disconnect(true);  // true = turn off WiFi radio
+                        Serial.println("WiFi reset, preparing for next attempt...");
+                        delay(100);
+                    }
+                }
             }
-            Serial.println();
             
-            if (WiFi.status() == WL_CONNECTED) {
-                Serial.print("Connected! IP: ");
-                Serial.println(WiFi.localIP());
-                return true;
-            } else {
-                Serial.println("Failed to connect with stored credentials");
-                if (_display) {
-                    _display->showStatus("WiFi failed (" + storedSSID + ") - reboot or reconfigure");
-                    delay(3000);
-                }
-                WiFi.disconnect();
-                // Note: NOT clearing stored credentials - user can reboot to retry
+            // All 3 attempts failed
+            Serial.println("Failed to connect after 3 attempts");
+            if (_display) {
+                _display->showStatus("WiFi failed after 3 attempts - switching to AP mode");
+                delay(2000);
             }
+            WiFi.disconnect();
+            // Note: NOT clearing stored credentials - they are preserved for next boot
         }
         
-        // No stored credentials or connection failed - start provisioning
+        // No stored credentials or connection failed 3 times - start provisioning AP mode
         // Stored credentials are preserved and will be tried again on next boot
-        Serial.println("Starting WiFi provisioning...");
+        Serial.println("Starting WiFi provisioning (AP mode)...");
 
         // Ensure clean WiFi state
         WiFi.softAPdisconnect(true);

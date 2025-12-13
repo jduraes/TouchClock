@@ -1,0 +1,32 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Stop Serial Monitor",
+			"type": "shell",
+			"command": "taskkill",
+			"args": ["/F", "/IM", "pythonw.exe", "/T"],
+			"windows": {
+				"command": "taskkill",
+				"args": ["/F", "/IM", "python.exe", "/T"]
+			},
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "silent"
+			}
+		},
+		{
+			"label": "Build and Upload",
+			"type": "shell",
+			"command": "platformio run --target upload --upload-port COM6",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"preLaunchTask": "Stop Serial Monitor",
+			"problemMatcher": [
+				"$gcc"
+			]
+		}
+	]
+}
