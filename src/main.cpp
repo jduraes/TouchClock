@@ -60,6 +60,10 @@ void setup() {
         dispMgr.clearInstructions();
         dispMgr.showStatus(String("WiFi: ") + WiFi.SSID());
         
+        // FIX: Disable WiFi power saving to prevent SPI bus contention/display flickering
+        // WiFi power saving causes frequent radio wakeups that interfere with SPI display timing
+        WiFi.setSleep(WIFI_PS_NONE);
+        
         // Now sync time from NTP
         timeMgr.begin(&dispMgr);
         dispMgr.drawStaticInterface();
@@ -116,19 +120,6 @@ void loop() {
             dispMgr.updateDate(dateStr);
         }
     }
-    
-    // Update brightness display every 100ms to show raw sensor values // enable if needed to troubleshoot brightness sensor
-    /*
-    static unsigned long lastBrightnessUpdate = 0;
-    if (currentMillis - lastBrightnessUpdate >= 100) {
-        lastBrightnessUpdate = currentMillis;
-        uint16_t rawValue = lightSensor.getLightLevelRaw();
-        if (rawValue != lastDisplayedBrightness) {
-            lastDisplayedBrightness = rawValue;
-            dispMgr.showBrightness(rawValue); 
-        }
-    }
-    */
 
     // Cycle status messages every 5 seconds (unless in debug mode)
     static unsigned long lastStatusUpdate = 0;
