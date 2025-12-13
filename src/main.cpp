@@ -148,6 +148,7 @@ void loop() {
         }
     }
     
-    // Moderate loop frequency to reduce CPU usage and render flickering
-    delay(50);  // 20Hz update rate is smooth enough for a clock
+    // LVGL recommends calling timer handler every 5-10ms for smooth operation
+    // The 50ms delay is replaced with shorter delays to keep LVGL responsive
+    delay(5);  // 5ms delay allows LVGL to handle events smoothly
 }
