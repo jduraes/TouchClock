@@ -1,8 +1,9 @@
 #include <Arduino.h>
-#include "DisplayManager.h"
+#include <lvgl.h>
+#include "DisplayManagerLVGL.h"
 #include "NetworkManager.h"
 #include "TimeManager.h"
-#include "TouchManager.h"
+#include "TouchManagerLVGL.h"
 #include "LightSensorManager.h"
 #include "RGBLedManager.h"
 
@@ -81,6 +82,9 @@ void setup() {
 }
 
 void loop() {
+    // Update LVGL timer handler (handles touch input and display refresh)
+    dispMgr.update();
+    
     // Check if screen is off and wake on any touch
     static unsigned long lastTouchCheckTime = 0;
     if (!lightSensor.isScreenOn() && (millis() - lastTouchCheckTime > 100)) {
@@ -91,7 +95,7 @@ void loop() {
         }
     }
 
-    // Process touch events from Core 1 queue
+    // Process touch events (now handled by LVGL, but kept for compatibility)
     touchMgr.update();
 
     // Get current time with millisecond precision
