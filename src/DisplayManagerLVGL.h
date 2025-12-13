@@ -28,12 +28,13 @@ private:
     lv_obj_t *labelInstruction;
     
     // Display flush callback for LVGL
-    static void display_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map) {
+    static void display_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t * px_map) {
         uint32_t w = lv_area_get_width(area);
         uint32_t h = lv_area_get_height(area);
         
         DisplayManager* pThis = (DisplayManager*)lv_display_get_user_data(disp);
         if (pThis) {
+            // Swap bytes for RGB565 if needed
             lv_draw_sw_rgb565_swap(px_map, w * h);
             pThis->tft.startWrite();
             pThis->tft.setAddrWindow(area->x1, area->y1, w, h);

@@ -1,12 +1,14 @@
 # TouchClock
 
-A networked digital clock for the **ESP32 Cheap Yellow Display (ESP32-2432S028)** with Wi-Fi provisioning.
+A networked digital clock for the **ESP32 Cheap Yellow Display (ESP32-2432S028)** with Wi-Fi provisioning, powered by **LVGL9**.
 
 ## Features
+- **Modern UI Framework:** Built with LVGL9 (Light and Versatile Graphics Library)
 - **Dynamic Wi-Fi Setup:** Captive portal for easy SSID/password configuration on first boot
 - **Persistent Storage:** Saves Wi-Fi credentials to NVS (Preferences) for automatic reconnection
 - **Real-time Display:** Shows current time in large, readable format (landscape 320×240)
 - **Responsive UI:** Status messages and setup instructions displayed during boot
+- **Touch Input:** Full touchscreen support via LVGL input system
 
 ## Hardware
 - **Board:** ESP32-WROOM-32 (ESP32-2432S028 module)
@@ -72,7 +74,8 @@ See [BUILD.md](BUILD.md) for detailed build instructions.
 
 ### Display Driver
 - **Chip:** ILI9341 (revision 2)
-- **Library:** TFT_eSPI (^2.5.33)
+- **UI Framework:** LVGL v9.2 (Light and Versatile Graphics Library)
+- **Display Driver:** TFT_eSPI (^2.5.31) for low-level display control
 - **Inversion:** Enabled (`TFT_INVERSION_ON`)
 - **Rotation:** Landscape (1)
 
@@ -102,7 +105,25 @@ See [BUILD.md](BUILD.md) for detailed build instructions.
 ### Time doesn't sync
 → Ensure WiFi is connected before TimeManager starts (see `setup()`)
 
+## LVGL9 Integration
+
+This project has been updated to use LVGL v9.2 for improved graphics and UI management.
+
+### Key Changes:
+- **DisplayManager:** Now uses LVGL widgets instead of direct TFT_eSPI drawing
+- **TouchManager:** Integrated with LVGL's input device system
+- **Configuration:** See `lv_conf.h` for LVGL settings
+- **Memory:** LVGL uses 48KB for graphics operations (configurable)
+- **Rendering:** Double-buffered partial rendering for smooth updates
+
+### Benefits of LVGL:
+- **Structured UI:** Widget-based system instead of pixel manipulation
+- **Themes & Styles:** Built-in styling system for consistent look
+- **Touch Handling:** Integrated touch input with gesture support
+- **Future Expandability:** Easy to add buttons, sliders, and other widgets
+
 ## References
+- [LVGL Documentation](https://docs.lvgl.io/9.2/)
 - [Official ESP32-CYD Repository](https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display)
 - [TFT_eSPI](https://github.com/Bodmer/TFT_eSPI)
 - [AutoConnect](https://hieromon.github.io/AutoConnect/)
