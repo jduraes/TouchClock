@@ -8,6 +8,8 @@
 
 // WiFi credentials are stored/prompted by NetworkManager now
 
+const char* VERSION = "v1.0.3";
+
 // --- Objects ---
 NetworkManager netMgr;
 TimeManager timeMgr; // Defaults to UK GMT/BST
@@ -28,6 +30,7 @@ void setup() {
     
     dispMgr.begin();
     dispMgr.drawStaticInterface();
+    dispMgr.updateHeaderText("TouchClock", VERSION);
 
     // Initialize RGB LED manager and turn it off
     rgbLed.begin();
@@ -67,6 +70,7 @@ void setup() {
         // Now sync time from NTP
         timeMgr.begin(&dispMgr);
         dispMgr.drawStaticInterface();
+        dispMgr.updateHeaderText("TouchClock", VERSION);
         
         // Display first time and date immediately
         String timeStr = timeMgr.getFormattedTime();

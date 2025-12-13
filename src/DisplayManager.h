@@ -7,7 +7,6 @@ class DisplayManager {
     TFT_eSPI tft = TFT_eSPI();
     int Lw = 320; 
     int Lh = 240;
-    const char* VERSION = "v1.0.2";
     String _lastStatusShown = "";  // Cache last status to avoid redraw
 
 public:
@@ -34,15 +33,17 @@ public:
     }
 
     // Redraws the top bar title, divider line, and version label
-    void updateHeaderText(const String& text) {
+    void updateHeaderText(const String& text, const char* version = nullptr) {
         tft.fillRect(0, 0, Lw, 50, TFT_BLACK);
         tft.setTextColor(TFT_YELLOW, TFT_BLACK);
         tft.drawCentreString(text, Lw / 2, 10, 4);
         tft.drawFastHLine(0, 40, Lw, TFT_BLUE);
 
         // Draw version in tiny blue font at top right, above the blue line
-        tft.setTextColor(TFT_BLUE, TFT_BLACK);
-        tft.drawString(VERSION, Lw - 35, 25, 1);
+        if (version) {
+            tft.setTextColor(TFT_BLUE, TFT_BLACK);
+            tft.drawString(version, Lw - 35, 25, 1);
+        }
     }
 
     void updateClock(String timeStr) {

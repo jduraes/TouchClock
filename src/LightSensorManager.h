@@ -87,33 +87,28 @@ private:
                     _brightnessCallback(_currentAverage5Sec);
                 }
 
-                // Only check for screen-off when screen is ON
-                // Check periodically (every 500ms) to avoid constant state changes
-                if (_screenOn && (now - _lastScreenCheckTime >= SCREEN_CHECK_INTERVAL_MS)) {
-                    _lastScreenCheckTime = now;
-                    
-                    if (_latestRawReading < DARKNESS_THRESHOLD) {
-                        // Start tracking bright light detection
-                        if (_brightLightStartTime == 0) {
-                            _brightLightStartTime = now;
+                // Screen-off logic: Turn screen off when bright light detected for 2+ seconds
+                if (_screenOn) {  // Only check if screen is currently on
+                    if (now - _lastScreenCheckTime >= SCREEN_CHECK_INTERVAL_MS) {
+                        _lastScreenCheckTime = now;
+                        
+                        if (_latestRawReading < DARKNESS_THRESHOLD) {  // Sensor reads BELOW 30 = very bright
+                            if (_brightLightStartTime == 0) {
+                                _brightLightStartTime = now;  // Record when bright light first detected
+                            } else if (now - _brightLightStartTime >= BRIGHT_LIGHT_DEBOUNCE_MS) {
+                                turnScreenOff();  // 2 seconds of sustained brightness
+                            }
+                        } else {
+                            _brightLightStartTime = 0;  // Reset debounce timer if brightness goes away
                         }
-                        // Turn off only after 2 seconds of sustained bright light
-                        if (now - _brightLightStartTime >= BRIGHT_LIGHT_DEBOUNCE_MS) {
-                            turnScreenOff();
-                            _brightLightStartTime = 0;  // Reset timer
-                        }
-                    } else {
-                        // Reading is back above threshold, reset timer
-                        _brightLightStartTime = 0;
                     }
                 }
-                // When screen is off, don't check brightness - wait for touch to wake
 
                 // Debug: print values every 2 seconds
                 if (now - lastDebugPrint >= 2000) {
                     lastDebugPrint = now;
                     Serial.printf("DEBUG Light: raw=%d, avg5s=%d, avg10s=%d, threshold=%d, screen=%s\n", 
-                        newSample, _currentAverage5Sec, _currentAverage10Sec, DARKNESS_THRESHOLD,
+                        _latestRawReading, _currentAverage5Sec, _currentAverage10Sec, DARKNESS_THRESHOLD,
                         _screenOn ? "ON" : "OFF");
                 }
             }
