@@ -82,7 +82,7 @@ void setup() {
 }
 
 void loop() {
-    // Update LVGL timer handler (handles touch input and display refresh)
+    // Update LVGL timer handler (handles display refresh, animations, and LVGL housekeeping)
     dispMgr.update();
     
     // Check if screen is off and wake on any touch
@@ -95,8 +95,8 @@ void loop() {
         }
     }
 
-    // Process touch events (now handled by LVGL, but kept for compatibility)
-    touchMgr.update();
+    // Touch events are handled automatically by LVGL via input device callback
+    // (update() method is empty but kept for API compatibility)
 
     // Get current time with millisecond precision
     unsigned long currentMillis = millis();

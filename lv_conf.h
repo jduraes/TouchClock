@@ -19,7 +19,12 @@
    MEMORY SETTINGS
  *====================*/
 
-/*Size of the memory available for `lv_malloc()` in bytes (>= 2kB)*/
+/*Size of the memory available for `lv_malloc()` in bytes (>= 2kB)
+ *48KB chosen for TouchClock based on:
+ * - Simple UI with few widgets (title, time, date, status labels)
+ * - No complex animations or many screens
+ * - ESP32 has 520KB RAM total, plenty for this allocation
+ * Adjust if adding more widgets, screens, or seeing memory errors in serial log*/
 #define LV_MEM_SIZE (48 * 1024U)          /*[bytes]*/
 
 /*Set an address for the memory pool instead of allocating it as a normal array. Can be in external SRAM too.*/

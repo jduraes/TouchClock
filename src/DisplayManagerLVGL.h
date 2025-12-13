@@ -28,6 +28,8 @@ private:
     lv_obj_t *labelInstruction;
     
     // Display flush callback for LVGL
+    // NOTE: Only one DisplayManager instance should exist in the application
+    // The user_data pointer ensures this callback operates on the correct instance
     static void display_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t * px_map) {
         uint32_t w = lv_area_get_width(area);
         uint32_t h = lv_area_get_height(area);

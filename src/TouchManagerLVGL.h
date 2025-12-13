@@ -47,6 +47,9 @@ private:
     bool _titleIsCopyright;
     
     // Last touch point for LVGL
+    // NOTE: Static variables shared across callbacks. Thread-safe in this application
+    // because LVGL timer handler is called from main loop (Core 0 only).
+    // If LVGL were called from multiple cores, additional synchronization would be needed.
     static int16_t last_x;
     static int16_t last_y;
     static bool last_touched;
@@ -224,7 +227,9 @@ public:
 
     void update() {
         // LVGL handles touch reading automatically via the callback
-        // This method kept for API compatibility
+        // This method kept for API compatibility with original TouchManager
+        // DEPRECATED: No longer needed with LVGL, can be removed in future versions
+        // Applications should not call this method when using LVGL
     }
 
     bool isDebugMode() const {
