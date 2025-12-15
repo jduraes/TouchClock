@@ -6,6 +6,12 @@
 #include "TouchManagerLVGL.h"
 #include "LightSensorManager.h"
 #include "RGBLedManager.h"
+#include "AppVersion.h"
+
+// Single source of truth: implement appVersion()
+const char* appVersion() {
+    return "v1.0.3"; // TODO: bump here only when releasing
+}
 
 // WiFi credentials are stored/prompted by NetworkManager now
 
@@ -26,6 +32,12 @@ uint16_t lastDisplayedBrightness = 65535;  // Track brightness for display updat
 
 void setup() {
     Serial.begin(115200);
+    Serial.println("=== Memory Diagnostics ===");
+    Serial.printf("PSRAM found: %s\n", psramFound() ? "YES" : "NO");
+    Serial.printf("Heap total/free: %u / %u\n", ESP.getHeapSize(), ESP.getFreeHeap());
+#if CONFIG_SPIRAM_SUPPORT
+    Serial.printf("PSRAM total/free: %u / %u\n", ESP.getPsramSize(), ESP.getFreePsram());
+#endif
     
     dispMgr.begin();
     dispMgr.drawStaticInterface();
@@ -82,8 +94,13 @@ void setup() {
 }
 
 void loop() {
-    // Update LVGL timer handler (handles display refresh, animations, and LVGL housekeeping)
-    dispMgr.update();
+    // Update LVGL: tick increment and timer handler (handles display refresh, animations, and LVGL housekeeping)
+    static uint32_t lastTick = 0;
+    uint32_t currentTick = millis();
+    lv_tick_inc(currentTick - lastTick);  // Increment LVGL tick with time delta
+    lastTick = currentTick;
+    
+    dispMgr.update();  // Call lv_timer_handler()
     
     // Check if screen is off and wake on any touch
     static unsigned long lastTouchCheckTime = 0;

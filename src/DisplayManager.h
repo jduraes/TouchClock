@@ -7,7 +7,6 @@ class DisplayManager {
     TFT_eSPI tft = TFT_eSPI();
     int Lw = 320; 
     int Lh = 240;
-    const char* VERSION = "v1.0.2";
     String _lastStatusShown = "";  // Cache last status to avoid redraw
 
 public:

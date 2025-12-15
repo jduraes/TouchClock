@@ -5,10 +5,20 @@
 			"label": "Stop Serial Monitor",
 			"type": "shell",
 			"command": "taskkill",
-			"args": ["/F", "/IM", "pythonw.exe", "/T"],
+			"args": [
+				"/F",
+				"/IM",
+				"pythonw.exe",
+				"/T"
+			],
 			"windows": {
 				"command": "taskkill",
-				"args": ["/F", "/IM", "python.exe", "/T"]
+				"args": [
+					"/F",
+					"/IM",
+					"python.exe",
+					"/T"
+				]
 			},
 			"problemMatcher": [],
 			"presentation": {
@@ -27,6 +37,12 @@
 			"problemMatcher": [
 				"$gcc"
 			]
+		},
+		{
+			"label": "Build TouchClock after display fixes",
+			"type": "shell",
+			"command": "pio run -e TouchClock",
+			"group": "build"
 		}
 	]
 }
