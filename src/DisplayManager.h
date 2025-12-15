@@ -171,14 +171,12 @@ public:
         tft.drawLine(x + 6, y + 6, x + w, y + 6, TFT_SKYBLUE);
     }
 
-    const char* formatHour12(int hour) {
+    String formatHour12(int hour) {
         int h = hour % 12;
         if (h == 0) h = 12;
         bool pm = (hour % 24) >= 12;
-        static char buf[6];
-        snprintf(buf, sizeof(buf), "%d%s", h, pm ? "pm" : "am");
         // yields e.g. "12am", "2am", "12pm", "2pm"
-        return buf;
+        return String(h) + (pm ? "pm" : "am");
     }
 
     // Weather icons display
