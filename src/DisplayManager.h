@@ -3,6 +3,7 @@
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include "AppVersion.h"
+#include "../weather_icons.h"
 
 class DisplayManager {
     TFT_eSPI tft = TFT_eSPI();
@@ -24,7 +25,7 @@ class DisplayManager {
 
     // Weather icons row
     const int WEATHER_BASE_Y = 155; // top of icons row
-    const int WEATHER_ICON_W = 36;
+    const int WEATHER_ICON_W = 36; // matches bitmap assets in weather_icons.h
     const int WEATHER_ICON_H = 26;
     const int WEATHER_LABEL_GAP = 10; // gap between icons and labels
 
@@ -42,6 +43,7 @@ class DisplayManager {
 public:
     void begin() {
         tft.init();
+        tft.setSwapBytes(true); // Bitmaps stored in flash use big-endian 565
         
         // Rotation 1 = Landscape (320x240) - same as HelloWorld example
         tft.setRotation(1); 
@@ -99,7 +101,25 @@ public:
         return "WND";                                                                   // Default windy/other
     }
 
+    struct IconBitmap {
+        const uint16_t* data;
+        int w;
+        int h;
+    };
+
     enum WeatherIcon { ICON_SUN, ICON_PARTLY, ICON_CLOUD, ICON_RAIN, ICON_SNOW, ICON_THUNDER, ICON_FOG, ICON_WIND };
+
+    // Map our logical icons to PROGMEM bitmaps (Open-Meteo style), each 36x26
+    const IconBitmap iconBitmaps[8] = {
+        {icon_clear, WEATHER_ICON_W, WEATHER_ICON_H},          // ICON_SUN
+        {icon_partly_cloudy, WEATHER_ICON_W, WEATHER_ICON_H},  // ICON_PARTLY
+        {icon_overcast, WEATHER_ICON_W, WEATHER_ICON_H},       // ICON_CLOUD
+        {icon_rain, WEATHER_ICON_W, WEATHER_ICON_H},           // ICON_RAIN
+        {icon_snow, WEATHER_ICON_W, WEATHER_ICON_H},           // ICON_SNOW
+        {icon_thunder, WEATHER_ICON_W, WEATHER_ICON_H},        // ICON_THUNDER
+        {icon_fog, WEATHER_ICON_W, WEATHER_ICON_H},            // ICON_FOG
+        {icon_wind, WEATHER_ICON_W, WEATHER_ICON_H},           // ICON_WIND
+    };
 
     WeatherIcon mapWmoToIcon(uint8_t code) {
         if (code == 0) return ICON_SUN;
@@ -112,168 +132,6 @@ public:
         return ICON_WIND;
     }
 
-    // Pixel-art style weather icon drawing functions
-    void drawPixelSun(int x, int y, int size) {
-        // Background: cyan/blue
-        tft.fillRect(x, y, size, size, 0x04DF); // Light cyan
-        
-        // Sun body (yellow circle)
-        int cx = x + size / 2;
-        int cy = y + size / 2;
-        int r = size / 4;
-        tft.fillCircle(cx, cy, r, TFT_YELLOW);
-        
-        // Sun rays (8-directional, pixel-art style)
-        int rayLen = size / 6;
-        // Top
-        tft.fillRect(cx - 1, y + 2, 3, rayLen, TFT_ORANGE);
-        // Bottom
-        tft.fillRect(cx - 1, y + size - rayLen - 2, 3, rayLen, TFT_ORANGE);
-        // Left
-        tft.fillRect(x + 2, cy - 1, rayLen, 3, TFT_ORANGE);
-        // Right
-        tft.fillRect(x + size - rayLen - 2, cy - 1, rayLen, 3, TFT_ORANGE);
-        // Diagonals (pixel blocks)
-        tft.fillRect(x + 4, y + 4, 3, 3, TFT_ORANGE);
-        tft.fillRect(x + size - 7, y + 4, 3, 3, TFT_ORANGE);
-        tft.fillRect(x + 4, y + size - 7, 3, 3, TFT_ORANGE);
-        tft.fillRect(x + size - 7, y + size - 7, 3, 3, TFT_ORANGE);
-    }
-
-    void drawPixelPartlyCloudy(int x, int y, int size) {
-        // Background: cyan
-        tft.fillRect(x, y, size, size, 0x04DF);
-        
-        // Sun peeking from top-right
-        int sunX = x + size * 3 / 4;
-        int sunY = y + size / 4;
-        tft.fillCircle(sunX, sunY, size / 5, TFT_YELLOW);
-        
-        // White cloud (bottom-left, pixel-art puffy shape)
-        int cloudY = y + size / 2;
-        tft.fillRect(x + 4, cloudY, size - 8, size / 3, TFT_WHITE);
-        tft.fillRect(x + 2, cloudY + 2, size - 4, size / 4, TFT_WHITE);
-        // Cloud outline for depth
-        tft.drawRect(x + 4, cloudY, size - 8, size / 3, 0x8C51); // Darker blue outline
-    }
-
-    void drawPixelOvercast(int x, int y, int size) {
-        // Background: light gray
-        tft.fillRect(x, y, size, size, 0xC618); // Light gray
-        
-        // Two layers of gray clouds
-        uint16_t darkGray = 0x8410;
-        uint16_t lightGray = 0xBDF7;
-        
-        // Top cloud
-        tft.fillRect(x + 3, y + 4, size - 6, size / 3, lightGray);
-        tft.fillRect(x + 2, y + 6, size - 4, size / 4, lightGray);
-        
-        // Bottom cloud (darker)
-        tft.fillRect(x + 2, y + size / 2, size - 4, size / 3, darkGray);
-        tft.fillRect(x + 4, y + size / 2 + 2, size - 8, size / 4, darkGray);
-    }
-
-    void drawPixelFoggy(int x, int y, int size) {
-        // Background: pale/hazy
-        tft.fillRect(x, y, size, size, 0xDEDB); // Pale blue-gray
-        
-        // Faded sun with rays
-        int cx = x + size / 2;
-        int cy = y + size / 2;
-        uint16_t paleYellow = 0xFFE0; // Pale yellow
-        tft.fillCircle(cx, cy, size / 4, paleYellow);
-        
-        // Faded rays
-        int rayLen = size / 6;
-        tft.fillRect(cx - 1, y + 3, 2, rayLen, 0xEF7D);
-        tft.fillRect(cx - 1, y + size - rayLen - 3, 2, rayLen, 0xEF7D);
-        tft.fillRect(x + 3, cy - 1, rayLen, 2, 0xEF7D);
-        tft.fillRect(x + size - rayLen - 3, cy - 1, rayLen, 2, 0xEF7D);
-    }
-
-    void drawPixelRain(int x, int y, int size) {
-        // Background: blue
-        tft.fillRect(x, y, size, size, 0x0233); // Darker blue
-        
-        // Raindrops (gray diagonal lines, pixel-art style)
-        uint16_t dropColor = 0x7BEF; // Gray
-        int spacing = size / 5;
-        for (int i = 0; i < 4; i++) {
-            int dx = x + 3 + i * spacing;
-            int dy = y + 5 + (i % 2) * 3;
-            // Diagonal pixel line
-            tft.drawLine(dx, dy, dx + 2, dy + 4, dropColor);
-            tft.drawLine(dx + 1, dy, dx + 3, dy + 4, dropColor);
-        }
-    }
-
-    void drawPixelSnow(int x, int y, int size) {
-        // Background: cyan
-        tft.fillRect(x, y, size, size, 0x04DF);
-        
-        // Snowflake (white, pixel-art symmetric)
-        int cx = x + size / 2;
-        int cy = y + size / 2;
-        int armLen = size / 4;
-        
-        // Horizontal and vertical
-        tft.drawFastHLine(cx - armLen, cy, armLen * 2 + 1, TFT_WHITE);
-        tft.drawFastVLine(cx, cy - armLen, armLen * 2 + 1, TFT_WHITE);
-        
-        // Diagonals
-        for (int i = -armLen; i <= armLen; i++) {
-            tft.drawPixel(cx + i, cy + i, TFT_WHITE);
-            tft.drawPixel(cx + i, cy - i, TFT_WHITE);
-        }
-        
-        // Cross tips
-        tft.fillRect(cx - 2, cy - armLen - 2, 5, 2, TFT_WHITE);
-        tft.fillRect(cx - 2, cy + armLen + 1, 5, 2, TFT_WHITE);
-        tft.fillRect(cx - armLen - 2, cy - 2, 2, 5, TFT_WHITE);
-        tft.fillRect(cx + armLen + 1, cy - 2, 2, 5, TFT_WHITE);
-    }
-
-    void drawPixelThunder(int x, int y, int size) {
-        // Background: purple/dark
-        tft.fillRect(x, y, size, size, 0x4810); // Dark purple
-        
-        // Dark cloud
-        uint16_t cloudColor = 0x8410;
-        tft.fillRect(x + 3, y + 3, size - 6, size / 3, cloudColor);
-        tft.fillRect(x + 2, y + 5, size - 4, size / 4, cloudColor);
-        
-        // Lightning bolt (white/yellow, zig-zag)
-        int cx = x + size / 2;
-        int by = y + size / 3;
-        tft.fillTriangle(cx - 3, by, cx + 2, by, cx - 1, by + 6, TFT_WHITE);
-        tft.fillTriangle(cx - 1, by + 5, cx + 4, by + 5, cx + 1, by + 12, TFT_YELLOW);
-    }
-
-    void drawPixelWind(int x, int y, int size) {
-        // Background: turquoise/green
-        tft.fillRect(x, y, size, size, 0x07FD); // Turquoise
-        
-        // Swirly wind lines (white, curved pixel-art)
-        uint16_t windColor = TFT_WHITE;
-        int cy = y + size / 2;
-        
-        // Top swirl
-        tft.drawFastHLine(x + 3, cy - 5, size - 10, windColor);
-        tft.drawPixel(x + size - 7, cy - 6, windColor);
-        tft.drawPixel(x + size - 6, cy - 6, windColor);
-        tft.drawFastVLine(x + size - 6, cy - 6, 3, windColor);
-        
-        // Middle swirl
-        tft.drawFastHLine(x + 5, cy, size - 8, windColor);
-        
-        // Bottom swirl
-        tft.drawFastHLine(x + 3, cy + 5, size - 10, windColor);
-        tft.drawPixel(x + size - 7, cy + 6, windColor);
-        tft.drawPixel(x + size - 6, cy + 6, windColor);
-        tft.drawFastVLine(x + size - 6, cy + 4, 3, windColor);
-    }
-
     String formatHour12(int hour) {
         int h = hour % 12;
         if (h == 0) h = 12;
@@ -282,46 +140,22 @@ public:
         return String(h) + (pm ? "pm" : "am");
     }
 
-    // Weather icons display (pixel-art style)
+    // Weather icons display (PROGMEM bitmaps)
     void showWeatherIcons(const uint8_t codes[6]) {
         // Draw 6 icons across the width, below the date line
         const int slotW = Lw / 6;
-        const int iconSize = 28; // Square pixel-art icons
+        const int iconW = WEATHER_ICON_W;
+        const int iconH = WEATHER_ICON_H;
         const int baseY = WEATHER_BASE_Y;
-        tft.fillRect(0, baseY - 2, Lw, iconSize + 6, TFT_BLACK);
+        tft.fillRect(0, baseY - 2, Lw, iconH + 6, TFT_BLACK);
 
         for (int i = 0; i < 6; i++) {
             int cx = (slotW * i) + (slotW / 2);
-            int x = cx - iconSize / 2;
+            int x = cx - iconW / 2;
             int y = baseY;
             WeatherIcon ic = mapWmoToIcon(codes[i]);
-
-            switch (ic) {
-                case ICON_SUN:
-                    drawPixelSun(x, y, iconSize);
-                    break;
-                case ICON_PARTLY:
-                    drawPixelPartlyCloudy(x, y, iconSize);
-                    break;
-                case ICON_CLOUD:
-                    drawPixelOvercast(x, y, iconSize);
-                    break;
-                case ICON_RAIN:
-                    drawPixelRain(x, y, iconSize);
-                    break;
-                case ICON_SNOW:
-                    drawPixelSnow(x, y, iconSize);
-                    break;
-                case ICON_THUNDER:
-                    drawPixelThunder(x, y, iconSize);
-                    break;
-                case ICON_FOG:
-                    drawPixelFoggy(x, y, iconSize);
-                    break;
-                case ICON_WIND:
-                    drawPixelWind(x, y, iconSize);
-                    break;
-            }
+            const IconBitmap& bmp = iconBitmaps[ic];
+            tft.pushImage(x, y, bmp.w, bmp.h, bmp.data);
         }
     }
 

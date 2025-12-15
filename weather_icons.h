@@ -1,0 +1,258 @@
+#ifndef WEATHER_ICONS_H
+#define WEATHER_ICONS_H
+
+#include <Arduino.h>
+#include <pgmspace.h>
+
+// Color Palette (constexpr to avoid macro collisions)
+static constexpr uint16_t BK = 0x0000; // Black
+static constexpr uint16_t WT = 0xFFFF; // White
+static constexpr uint16_t YL = 0xFEA0; // Yellow
+static constexpr uint16_t GY = 0x8410; // Grey
+static constexpr uint16_t DG = 0x4208; // Dark Grey
+static constexpr uint16_t BL = 0x001F; // Blue
+static constexpr uint16_t LB = 0x867D; // Light Blue
+
+// Icon Dimensions: 36x26 pixels
+
+// clear
+const uint16_t PROGMEM icon_clear[] = {
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK,
+  YL, YL, YL, YL, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, YL, YL, YL,
+  YL, YL, YL, YL, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, YL, YL, YL,
+  YL, YL, YL, YL, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, YL, YL, YL,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+};
+
+// partly_cloudy
+const uint16_t PROGMEM icon_partly_cloudy[] = {
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, BK, BK, BK, WT, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, YL, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, YL, YL, YL, YL, YL, YL, YL, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, WT, WT, WT, WT, WT, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+};
+
+// overcast
+const uint16_t PROGMEM icon_overcast[] = {
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, WT, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, WT, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, WT, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, WT, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, WT, WT, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, WT, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, WT, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, WT, WT, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, WT, WT, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, WT, WT, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, WT, WT, WT, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, WT, WT, WT, WT, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, WT, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+};
+
+// fog
+const uint16_t PROGMEM icon_fog[] = {
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+};
+
+// rain
+const uint16_t PROGMEM icon_rain[] = {
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BL, BK, BK, BK, BK, BK, BK, BK, BK,
+};
+
+// snow
+const uint16_t PROGMEM icon_snow[] = {
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, GY, GY, GY, GY, GY, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, WT, BK, BK, BK, BK, BK, BK, BK, WT, BK, BK, BK, BK, BK, BK, BK, WT, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, WT, WT, WT, BK, BK, BK, BK, BK, BK, WT, BK, BK, BK, BK, BK, BK, BK, WT, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, WT, BK, BK, BK, BK, BK, BK, BK, WT, BK, BK, BK, BK, BK, BK, BK, WT, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+};
+
+// thunder
+const uint16_t PROGMEM icon_thunder[] = {
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, DG, DG, DG, DG, DG, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, YL, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+};
+
+// wind
+const uint16_t PROGMEM icon_wind[] = {
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, LB, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+  BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK, BK,
+};
+
+#endif
