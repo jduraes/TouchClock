@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <TFT_eSPI.h>
 #include <SPI.h>
+#include "AppVersion.h"
 
 class DisplayManager {
     TFT_eSPI tft = TFT_eSPI();
@@ -41,7 +42,7 @@ public:
 
         // Draw version in tiny blue font at top right, above the blue line
         tft.setTextColor(TFT_BLUE, TFT_BLACK);
-        tft.drawString(VERSION, Lw - 35, 25, 1);
+        tft.drawString(appVersion(), Lw - 35, 25, 1);
     }
 
     void updateClock(String timeStr) {

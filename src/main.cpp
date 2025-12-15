@@ -1,9 +1,8 @@
 #include <Arduino.h>
-#include <lvgl.h>
-#include "DisplayManagerLVGL.h"
+#include "DisplayManager.h"
 #include "NetworkManager.h"
 #include "TimeManager.h"
-#include "TouchManagerLVGL.h"
+#include "TouchManager.h"
 #include "LightSensorManager.h"
 #include "RGBLedManager.h"
 #include "AppVersion.h"
@@ -94,13 +93,7 @@ void setup() {
 }
 
 void loop() {
-    // Update LVGL: tick increment and timer handler (handles display refresh, animations, and LVGL housekeeping)
-    static uint32_t lastTick = 0;
-    uint32_t currentTick = millis();
-    lv_tick_inc(currentTick - lastTick);  // Increment LVGL tick with time delta
-    lastTick = currentTick;
-    
-    dispMgr.update();  // Call lv_timer_handler()
+    // No LVGL — standard loop timing only
     
     // Check if screen is off and wake on any touch
     static unsigned long lastTouchCheckTime = 0;
@@ -112,8 +105,8 @@ void loop() {
         }
     }
 
-    // Touch events are handled automatically by LVGL via input device callback
-    // (update() method is empty but kept for API compatibility)
+    // Pump touch events from queue (non-LVGL)
+    touchMgr.update();
 
     // Get current time with millisecond precision
     unsigned long currentMillis = millis();
@@ -165,7 +158,5 @@ void loop() {
         }
     }
     
-    // LVGL recommends calling timer handler every 5-10ms for smooth operation
-    // The 50ms delay is replaced with shorter delays to keep LVGL responsive
-    delay(5);  // 5ms delay allows LVGL to handle events smoothly
+    delay(5);
 }

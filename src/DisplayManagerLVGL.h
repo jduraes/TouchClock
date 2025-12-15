@@ -15,6 +15,12 @@ private:
     lv_obj_t *labelTitle;
     lv_obj_t *labelVersion;
     lv_obj_t *labelTime;
+    // Split time into fixed segments to avoid jitter
+    lv_obj_t *labelHH;
+    lv_obj_t *labelMM;
+    lv_obj_t *labelSS;
+    lv_obj_t *labelColon1;
+    lv_obj_t *labelColon2;
     lv_obj_t *labelDate;
     lv_obj_t *labelStatus;
     lv_obj_t *labelInstruction;
@@ -37,65 +43,123 @@ public:
         }
         
         // Create display using TFT_eSPI integration
-        lv_display_t *disp = lv_tft_espi_create(320, 240, draw_buf, DRAW_BUF_SIZE);
+        // Use the panel's native portrait resolution; rotation will apply logical landscape
+        lv_display_t *disp = lv_tft_espi_create(240, 320, draw_buf, DRAW_BUF_SIZE);
         if (!disp) {
             Serial.println("[Display] ERROR: Failed to create LVGL display!");
             return;
         }
-        // Ensure correct orientation for CYD (landscape)
-        lv_display_set_rotation(disp, LV_DISPLAY_ROTATION_270);
+        // Orientation: 90 for landscape
+        lv_display_set_rotation(disp, LV_DISPLAY_ROTATION_90);
+        // Update logical width/height after rotation
+        Lw = lv_display_get_horizontal_resolution(disp);
+        Lh = lv_display_get_vertical_resolution(disp);
         
         // Get screen and set background
         scr = lv_screen_active();
         lv_obj_set_style_bg_color(scr, lv_color_black(), 0);
         
+        // Clear draw buffer to ensure black screen at startup
+        memset(draw_buf, 0x00, DRAW_BUF_SIZE);
+        
+        // Force LVGL refresh to flush black background to display
+        lv_timer_handler();
+        lv_refr_now(disp);
+        delay(100);
+        
         Serial.println("[Display] LVGL initialization complete");
+        
+        // Draw UI immediately with initial status message
+        drawStaticInterface();
+        showStatus("Connecting to WiFi...");
     }
 
     void drawStaticInterface() {
         // Clear existing objects
         lv_obj_clean(scr);
         
-        // Create title label at top
+        // Create title label at top (bigger, yellow)
         labelTitle = lv_label_create(scr);
         lv_label_set_text(labelTitle, "TouchClock");
         lv_obj_set_style_text_color(labelTitle, lv_color_hex(0xFFFF00), 0); // Yellow
-        lv_obj_set_style_text_font(labelTitle, &lv_font_montserrat_14, 0);
-        lv_obj_align(labelTitle, LV_ALIGN_TOP_MID, 0, 10);
+        lv_obj_set_style_text_font(labelTitle, &lv_font_montserrat_20, 0);
+        lv_obj_align(labelTitle, LV_ALIGN_TOP_MID, 0, 3);
         
-        // Create horizontal line below title
+        // Create horizontal line below title (blue)
         lv_obj_t *line = lv_obj_create(scr);
         lv_obj_set_size(line, Lw, 2);
-        lv_obj_set_pos(line, 0, 40);
+        lv_obj_set_pos(line, 0, 34);
         lv_obj_set_style_bg_color(line, lv_color_hex(0x0000FF), 0); // Blue
         lv_obj_set_style_border_width(line, 0, 0);
         lv_obj_set_style_radius(line, 0, 0);
         
-        // Create version label (top right)
+        // Create version label (top right, small, blue)
         labelVersion = lv_label_create(scr);
         lv_label_set_text(labelVersion, appVersion());
-        lv_obj_align(labelVersion, LV_ALIGN_TOP_RIGHT, -2, 25);
+        lv_obj_set_style_text_color(labelVersion, lv_color_hex(0x0000FF), 0); // Blue
+        lv_obj_set_style_text_font(labelVersion, &lv_font_montserrat_14, 0);
+        lv_obj_align(labelVersion, LV_ALIGN_TOP_RIGHT, -4, 6);
         
-        // Create time label (large, center)
-        labelTime = lv_label_create(scr);
-        lv_label_set_text(labelTime, "--:--:--");
-        lv_obj_set_style_text_color(labelTime, lv_color_white(), 0);
-        lv_obj_set_style_text_font(labelTime, &lv_font_montserrat_14, 0);
-        lv_obj_align(labelTime, LV_ALIGN_CENTER, 0, -10);
+        // Create time as fixed-position segments to prevent horizontal jitter
+        const int cell = 32; // Approximate cell width for font 48
+        const int total = cell * 8; // HH:MM:SS = 8 cells
+        const int startX = (Lw - total) / 2;
+        const int baseY = (Lh / 2) - 24; // Vertical placement for font 48
+
+        // HH
+        labelHH = lv_label_create(scr);
+        lv_obj_set_style_text_color(labelHH, lv_color_white(), 0);
+        lv_obj_set_style_text_font(labelHH, &lv_font_montserrat_48, 0);
+        lv_obj_set_style_text_align(labelHH, LV_TEXT_ALIGN_LEFT, 0);
+        lv_obj_set_pos(labelHH, startX + cell * 0, baseY);
+        lv_label_set_text(labelHH, "00");
+
+        // ':'
+        labelColon1 = lv_label_create(scr);
+        lv_obj_set_style_text_color(labelColon1, lv_color_white(), 0);
+        lv_obj_set_style_text_font(labelColon1, &lv_font_montserrat_48, 0);
+        lv_obj_set_pos(labelColon1, startX + cell * 2, baseY);
+        lv_label_set_text(labelColon1, ":");
+
+        // MM
+        labelMM = lv_label_create(scr);
+        lv_obj_set_style_text_color(labelMM, lv_color_white(), 0);
+        lv_obj_set_style_text_font(labelMM, &lv_font_montserrat_48, 0);
+        lv_obj_set_style_text_align(labelMM, LV_TEXT_ALIGN_LEFT, 0);
+        lv_obj_set_pos(labelMM, startX + cell * 3, baseY);
+        lv_label_set_text(labelMM, "00");
+
+        // ':'
+        labelColon2 = lv_label_create(scr);
+        lv_obj_set_style_text_color(labelColon2, lv_color_white(), 0);
+        lv_obj_set_style_text_font(labelColon2, &lv_font_montserrat_48, 0);
+        lv_obj_set_pos(labelColon2, startX + cell * 5, baseY);
+        lv_label_set_text(labelColon2, ":");
+
+        // SS
+        labelSS = lv_label_create(scr);
+        lv_obj_set_style_text_color(labelSS, lv_color_white(), 0);
+        lv_obj_set_style_text_font(labelSS, &lv_font_montserrat_48, 0);
+        lv_obj_set_style_text_align(labelSS, LV_TEXT_ALIGN_LEFT, 0);
+        lv_obj_set_pos(labelSS, startX + cell * 6, baseY);
+        lv_label_set_text(labelSS, "00");
         
-        // Create date label (medium, below time)
+        // Create date label (slightly bigger, moved 10px higher)
         labelDate = lv_label_create(scr);
         lv_label_set_text(labelDate, "");
         lv_obj_set_style_text_color(labelDate, lv_color_white(), 0);
-        lv_obj_set_style_text_font(labelDate, &lv_font_montserrat_14, 0);
+        lv_obj_set_style_text_font(labelDate, &lv_font_montserrat_20, 0);
         lv_obj_align(labelDate, LV_ALIGN_CENTER, 0, 55);
         
-        // Create status label at bottom
+        // Create status label at bottom (NTP/server line) - greyish and slightly smaller look
         labelStatus = lv_label_create(scr);
-        lv_label_set_text(labelStatus, "");
-        lv_obj_set_style_text_color(labelStatus, lv_color_hex(0x888888), 0); // Dark grey
+        lv_label_set_text(labelStatus, "Initializing...");
+        lv_obj_set_style_text_color(labelStatus, lv_palette_main(LV_PALETTE_GREY), 0);
         lv_obj_set_style_text_font(labelStatus, &lv_font_montserrat_14, 0);
-        lv_obj_align(labelStatus, LV_ALIGN_BOTTOM_MID, 0, -5);
+        lv_obj_set_style_text_align(labelStatus, LV_TEXT_ALIGN_CENTER, 0);
+        lv_obj_set_width(labelStatus, Lw - 12);
+        lv_obj_set_style_border_width(labelStatus, 0, 0);
+        lv_obj_align(labelStatus, LV_ALIGN_BOTTOM_MID, 0, -2);
         
         // Create instruction label (hidden by default)
         labelInstruction = lv_label_create(scr);
@@ -111,14 +175,16 @@ public:
     void updateHeaderText(const String& text) {
         if (labelTitle) {
             lv_label_set_text(labelTitle, text.c_str());
-            lv_obj_align(labelTitle, LV_ALIGN_TOP_MID, 0, 10);
+            lv_obj_align(labelTitle, LV_ALIGN_TOP_MID, 0, 3);
         }
     }
 
     void updateClock(String timeStr) {
-        if (labelTime) {
-            lv_label_set_text(labelTime, timeStr.c_str());
-            lv_obj_align(labelTime, LV_ALIGN_CENTER, 0, -10);
+        // Expect timeStr as "HH:MM:SS"
+        if (timeStr.length() >= 8) {
+            if (labelHH) lv_label_set_text(labelHH, timeStr.substring(0, 2).c_str());
+            if (labelMM) lv_label_set_text(labelMM, timeStr.substring(3, 5).c_str());
+            if (labelSS) lv_label_set_text(labelSS, timeStr.substring(6, 8).c_str());
         }
     }
     
@@ -137,7 +203,7 @@ public:
         
         if (labelStatus) {
             lv_label_set_text(labelStatus, status.c_str());
-            lv_obj_align(labelStatus, LV_ALIGN_BOTTOM_MID, 0, -5);
+            lv_obj_align(labelStatus, LV_ALIGN_BOTTOM_MID, 0, -2);
         }
     }
 
