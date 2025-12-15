@@ -151,6 +151,9 @@ void loop() {
     // Hourly Big Ben chime between 08:00-22:00
     chimeMgr.maybeChime(timeinfo);
 
+    // Rolling weather label update at every 2-hour boundary
+    weatherMgr.maybeRefreshRolling(timeinfo, &dispMgr);
+
     // Cycle status messages every 5 seconds (unless in debug mode)
     static unsigned long lastStatusUpdate = 0;
     static int statusIndex = 0;
