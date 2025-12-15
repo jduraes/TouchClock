@@ -101,14 +101,15 @@ public:
         _hasData = true;
 
         if (display) {
-            display->showWeatherIcons(_codes);
+            // Tomorrow from 00:00 at 2-hour steps
+            display->showWeatherIconsWithLabels(_codes, 0);
         }
         return true;
     }
 
     void show(DisplayManager* display) {
         if (_hasData && display) {
-            display->showWeatherIcons(_codes);
+            display->showWeatherIconsWithLabels(_codes, 0);
         }
     }
 

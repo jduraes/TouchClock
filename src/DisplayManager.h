@@ -140,12 +140,22 @@ public:
         tft.drawLine(x + 6, y + 6, x + w, y + 6, TFT_SKYBLUE);
     }
 
+    const char* formatHour12(int hour) {
+        int h = hour % 12;
+        if (h == 0) h = 12;
+        bool pm = (hour % 24) >= 12;
+        static char buf[6];
+        snprintf(buf, sizeof(buf), "%d%sam", h, pm ? "p" : "");
+        // buf yields e.g. "12am", "2am", "12pm", "2pm"
+        return buf;
+    }
+
     void showWeatherIcons(const uint8_t codes[6]) {
         // Draw 6 icons across the width, below the date line
         const int slotW = Lw / 6;
         const int iconW = 36;
         const int iconH = 26;
-        const int baseY = 150; // top of icons row
+        const int baseY = 165; // top of icons row
         tft.fillRect(0, baseY - 2, Lw, iconH + 6, TFT_BLACK);
 
         for (int i = 0; i < 6; i++) {
@@ -185,6 +195,19 @@ public:
                     drawWind(x + 4, y + 10, iconW - 8);
                     break;
             }
+        }
+    }
+
+    void showWeatherIconsWithLabels(const uint8_t codes[6], int startHour) {
+        // Draw icons and 12h labels 5px below
+        showWeatherIcons(codes);
+        const int slotW = Lw / 6;
+        const int labelY = 150 + 26 + 5; // baseY + iconH + 5px gap
+        tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
+        for (int i = 0; i < 6; i++) {
+            int cx = (slotW * i) + (slotW / 2);
+            int hour = (startHour + i * 2) % 24;
+            tft.drawCentreString(formatHour12(hour), cx, labelY, 1);
         }
     }
     
