@@ -47,13 +47,37 @@ public:
 
     void updateClock(String timeStr) {
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.drawCentreString(timeStr, Lw / 2, 85, 7);
+        tft.drawCentreString(timeStr, Lw / 2, 80, 7);
     }
     
     void updateDate(String dateStr) {
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.setTextSize(1);
-        tft.drawCentreString(dateStr, Lw / 2, 140, 2);
+        tft.drawCentreString(dateStr, Lw / 2, 135, 2);
+    }
+
+    const char* codeToGlyph(uint8_t code) {
+        // Map WMO weather codes to short ASCII glyphs
+        if (code == 0) return "SUN";             // Clear
+        if (code == 1 || code == 2) return "PCLD"; // Partly cloudy
+        if (code == 3) return "CLD";              // Overcast
+        if (code == 45 || code == 48) return "FG"; // Fog
+        if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return "RAIN"; // Drizzle/rain
+        if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return "SNW";   // Snow
+        if (code >= 95) return "TSTM";            // Thunder
+        return "WND";                             // Default windy/other
+    }
+
+    void showWeatherIcons(const uint8_t codes[6]) {
+        // Draw 6 glyphs centered across the width, below the date line
+        const int y = 160;
+        const int slotW = Lw / 6;
+        tft.fillRect(0, 148, Lw, 32, TFT_BLACK);
+        tft.setTextColor(TFT_CYAN, TFT_BLACK);
+        for (int i = 0; i < 6; i++) {
+            int cx = (slotW * i) + (slotW / 2);
+            tft.drawCentreString(codeToGlyph(codes[i]), cx, y, 2);
+        }
     }
     
     void showStatus(String status) {

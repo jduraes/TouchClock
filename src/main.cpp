@@ -5,16 +5,13 @@
 #include "TouchManager.h"
 #include "LightSensorManager.h"
 #include "RGBLedManager.h"
-#include "AppVersion.h"
+#include "ChimeManager.h"
+#include "WeatherManager.h"
 
 // Single source of truth: implement appVersion()
 const char* appVersion() {
-    return "v1.0.3"; // TODO: bump here only when releasing
+    return "v1.0.4"; // TODO: bump here only when releasing
 }
-
-// WiFi credentials are stored/prompted by NetworkManager now
-
-const char* VERSION = "v1.0.3";
 
 // --- Objects ---
 NetworkManager netMgr;
@@ -23,6 +20,8 @@ DisplayManager dispMgr;
 TouchManager touchMgr;
 RGBLedManager rgbLed;
 LightSensorManager lightSensor;
+ChimeManager chimeMgr;
+WeatherManager weatherMgr;
 
 // --- Timing ---
 unsigned long previousMillis = 0;
@@ -42,8 +41,8 @@ void setup() {
     
     dispMgr.begin();
     dispMgr.drawStaticInterface();
-    dispMgr.updateHeaderText("TouchClock", VERSION);
-
+    dispMgr.updateHeaderText("TouchClock");
+    
     // Initialize RGB LED manager and turn it off
     rgbLed.begin();
     rgbLed.off();
@@ -51,6 +50,9 @@ void setup() {
     // Initialize light sensor (runs on Core 1)
     // Pass null callback - RGB LED is disabled for now
     lightSensor.begin(&dispMgr, nullptr);
+
+    // Initialize chime (default speaker pin = 25 on CYD)
+    chimeMgr.begin();
 
     // Initialize touch manager (runs on Core 1)
     touchMgr.begin(&dispMgr);
@@ -82,13 +84,14 @@ void setup() {
         // Now sync time from NTP
         timeMgr.begin(&dispMgr);
         dispMgr.drawStaticInterface();
-        dispMgr.updateHeaderText("TouchClock", VERSION);
+        dispMgr.updateHeaderText("TouchClock");
         
         // Display first time and date immediately
         String timeStr = timeMgr.getFormattedTime();
         String dateStr = timeMgr.getFormattedDate();
         dispMgr.updateClock(timeStr);
         dispMgr.updateDate(dateStr);
+        weatherMgr.refresh(&dispMgr);  // Fetch and draw tomorrow's forecast
         Serial.println(timeStr);
         Serial.println(dateStr);
     } else {
@@ -137,7 +140,16 @@ void loop() {
             lastDisplayedDate = dateStr;
             dispMgr.updateDate(dateStr);
         }
+
+        // Refresh tomorrow's forecast once per day (after date change)
+        weatherMgr.refresh(&dispMgr);
     }
+
+    // Daily guard to refetch shortly after midnight if missed
+    weatherMgr.maybeRefreshDaily(timeinfo, &dispMgr);
+
+    // Hourly Big Ben chime between 08:00-22:00
+    chimeMgr.maybeChime(timeinfo);
 
     // Cycle status messages every 5 seconds (unless in debug mode)
     static unsigned long lastStatusUpdate = 0;

@@ -162,8 +162,8 @@ public:
     void begin(DisplayManager* display) {
         _display = display;
 
-        // Initialize SPI for touch controller on VSPI
-        _spi = new SPIClass(VSPI);
+        // Initialize SPI for touch controller on HSPI to avoid contention with TFT VSPI bus
+        _spi = new SPIClass(HSPI);
         _spi->begin(XPT2046_CLK, XPT2046_MISO, XPT2046_MOSI, XPT2046_CS);
 
         // Initialize XPT2046 touchscreen
