@@ -10,6 +10,35 @@ class DisplayManager {
     int Lh = 240;
     String _lastStatusShown = "";  // Cache last status to avoid redraw
 
+    // Layout constants (tunable positions and sizes)
+    // Header
+    const int HEADER_HEIGHT = 50;
+    const int HEADER_TITLE_Y = 10;
+    const int HEADER_DIVIDER_Y = 40;
+    const int HEADER_VERSION_Y = 25;
+    const int HEADER_VERSION_RIGHT_PAD = 35; // distance from right edge
+    
+    // Clock & date
+    const int CLOCK_Y = 65;         // centre Y for main time
+    const int DATE_Y = 120;         // centre Y for date line
+
+    // Weather icons row
+    const int WEATHER_BASE_Y = 155; // top of icons row
+    const int WEATHER_ICON_W = 36;
+    const int WEATHER_ICON_H = 26;
+    const int WEATHER_LABEL_GAP = 10; // gap between icons and labels
+
+    // Status & instruction areas
+    const int STATUS_BAR_HEIGHT = 30;
+    const int STATUS_TEXT_Y_OFFSET = 18; // distance from bottom to centre text
+    const int INSTR_BAR_HEIGHT = 50;
+    const int INSTR_LINE1_Y = 45;  // distance from bottom for first line
+    const int INSTR_LINE2_Y = 25;  // distance from bottom for second line
+    const int BRIGHTNESS_AREA_Y = 42; // area just below header divider
+    const int BRIGHTNESS_AREA_H = 20;
+    const int BRIGHTNESS_TEXT_X = 2;
+    const int BRIGHTNESS_TEXT_Y = 43;
+
 public:
     void begin() {
         tft.init();
@@ -35,37 +64,39 @@ public:
 
     // Redraws the top bar title, divider line, and version label
     void updateHeaderText(const String& text) {
-        tft.fillRect(0, 0, Lw, 50, TFT_BLACK);
+        tft.fillRect(0, 0, Lw, HEADER_HEIGHT, TFT_BLACK);
         tft.setTextColor(TFT_YELLOW, TFT_BLACK);
-        tft.drawCentreString(text, Lw / 2, 10, 4);
-        tft.drawFastHLine(0, 40, Lw, TFT_BLUE);
+        tft.drawCentreString(text, Lw / 2, HEADER_TITLE_Y, 4);
+        tft.drawFastHLine(0, HEADER_DIVIDER_Y, Lw, TFT_BLUE);
 
         // Draw version in tiny blue font at top right, above the blue line
         tft.setTextColor(TFT_BLUE, TFT_BLACK);
-        tft.drawString(appVersion(), Lw - 35, 25, 1);
+        tft.drawString(appVersion(), Lw - HEADER_VERSION_RIGHT_PAD, HEADER_VERSION_Y, 1);
     }
 
+    // Update clock display
     void updateClock(String timeStr) {
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.drawCentreString(timeStr, Lw / 2, 75, 7);
+        tft.drawCentreString(timeStr, Lw / 2, CLOCK_Y, 7);
     }
     
+    // Update date display
     void updateDate(String dateStr) {
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.setTextSize(1);
-        tft.drawCentreString(dateStr, Lw / 2, 130, 2);
+        tft.drawCentreString(dateStr, Lw / 2, DATE_Y, 2);
     }
 
     const char* codeToGlyph(uint8_t code) {
         // Map WMO weather codes to short ASCII glyphs
-        if (code == 0) return "SUN";             // Clear
-        if (code == 1 || code == 2) return "PCLD"; // Partly cloudy
-        if (code == 3) return "CLD";              // Overcast
-        if (code == 45 || code == 48) return "FG"; // Fog
-        if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return "RAIN"; // Drizzle/rain
-        if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return "SNW";   // Snow
-        if (code >= 95) return "TSTM";            // Thunder
-        return "WND";                             // Default windy/other
+        if (code == 0) return "SUN";                                                    // Clear
+        if (code == 1 || code == 2) return "PCLD";                                      // Partly cloudy
+        if (code == 3) return "CLD";                                                    // Overcast
+        if (code == 45 || code == 48) return "FG";                                      // Fog
+        if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return "RAIN";    // Drizzle/rain
+        if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return "SNW";     // Snow
+        if (code >= 95) return "TSTM";                                                  // Thunder
+        return "WND";                                                                   // Default windy/other
     }
 
     enum WeatherIcon { ICON_SUN, ICON_PARTLY, ICON_CLOUD, ICON_RAIN, ICON_SNOW, ICON_THUNDER, ICON_FOG, ICON_WIND };
@@ -150,12 +181,13 @@ public:
         return buf;
     }
 
+    // Weather icons display
     void showWeatherIcons(const uint8_t codes[6]) {
         // Draw 6 icons across the width, below the date line
         const int slotW = Lw / 6;
-        const int iconW = 36;
-        const int iconH = 26;
-        const int baseY = 165; // top of icons row
+        const int iconW = WEATHER_ICON_W;
+        const int iconH = WEATHER_ICON_H;
+        const int baseY = WEATHER_BASE_Y; // top of icons row
         tft.fillRect(0, baseY - 2, Lw, iconH + 6, TFT_BLACK);
 
         for (int i = 0; i < 6; i++) {
@@ -198,16 +230,17 @@ public:
         }
     }
 
+    // Show weather icons with 12-hour labels below
     void showWeatherIconsWithLabels(const uint8_t codes[6], int startHour) {
         // Draw icons and 12h labels 5px below
         showWeatherIcons(codes);
         const int slotW = Lw / 6;
-        const int labelY = 170 + 26 + 5; // baseY + iconH + 5px gap
+        const int labelY = WEATHER_BASE_Y + WEATHER_ICON_H + WEATHER_LABEL_GAP; // baseY + iconH + gap
         tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
         for (int i = 0; i < 6; i++) {
             int cx = (slotW * i) + (slotW / 2);
             int hour = (startHour + i * 2) % 24;
-            tft.drawCentreString(formatHour12(hour), cx, labelY, 1);
+            tft.drawCentreString(formatHour12(hour), cx, labelY, 2);
         }
     }
     
@@ -218,30 +251,30 @@ public:
         }
         _lastStatusShown = status;
         
-        tft.fillRect(0, Lh - 30, Lw, 30, TFT_BLACK);
+        tft.fillRect(0, Lh - STATUS_BAR_HEIGHT, Lw, STATUS_BAR_HEIGHT, TFT_BLACK);
         tft.setTextSize(1);
         tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
-        tft.drawCentreString(status, Lw / 2, Lh - 18, 1);
+        tft.drawCentreString(status, Lw / 2, Lh - STATUS_TEXT_Y_OFFSET, 1);
     }
 
     void showInstruction(const String& text) {
-        tft.fillRect(0, Lh - 50, Lw, 50, TFT_BLACK);
+        tft.fillRect(0, Lh - INSTR_BAR_HEIGHT, Lw, INSTR_BAR_HEIGHT, TFT_BLACK);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.setTextSize(1);
         
         int split = text.indexOf('\n');
         if (split < 0) {
-            tft.drawCentreString(text, Lw / 2, Lh - 35, 2);
+            tft.drawCentreString(text, Lw / 2, Lh - (INSTR_BAR_HEIGHT - INSTR_LINE2_Y), 2);
         } else {
             String a = text.substring(0, split);
             String b = text.substring(split + 1);
-            tft.drawCentreString(a, Lw / 2, Lh - 45, 2);
-            tft.drawCentreString(b, Lw / 2, Lh - 25, 2);
+            tft.drawCentreString(a, Lw / 2, Lh - INSTR_LINE1_Y, 2);
+            tft.drawCentreString(b, Lw / 2, Lh - INSTR_LINE2_Y, 2);
         }
     }
 
     void clearInstructions() {
-        tft.fillRect(0, Lh - 60, Lw, 60, TFT_BLACK);
+        tft.fillRect(0, Lh - (INSTR_BAR_HEIGHT + STATUS_BAR_HEIGHT), Lw, (INSTR_BAR_HEIGHT + STATUS_BAR_HEIGHT), TFT_BLACK);
     }
 
     // Debug overlay helpers for touch areas
@@ -256,9 +289,9 @@ public:
 
     void showBrightness(uint16_t rawValue) {
         // Clear the left side area just below the blue line
-        tft.fillRect(0, 42, 80, 20, TFT_BLACK);
+        tft.fillRect(0, BRIGHTNESS_AREA_Y, 80, BRIGHTNESS_AREA_H, TFT_BLACK);
         // Draw raw sensor value in font 1 (small), blue color
         tft.setTextColor(TFT_BLUE, TFT_BLACK);
-        tft.drawString(String(rawValue).c_str(), 2, 43, 1);
+        tft.drawString(String(rawValue).c_str(), BRIGHTNESS_TEXT_X, BRIGHTNESS_TEXT_Y, 1);
     }
 };
