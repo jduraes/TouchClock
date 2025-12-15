@@ -112,63 +112,166 @@ public:
         return ICON_WIND;
     }
 
-    void drawSun(int cx, int cy, int r) {
+    // Pixel-art style weather icon drawing functions
+    void drawPixelSun(int x, int y, int size) {
+        // Background: cyan/blue
+        tft.fillRect(x, y, size, size, 0x04DF); // Light cyan
+        
+        // Sun body (yellow circle)
+        int cx = x + size / 2;
+        int cy = y + size / 2;
+        int r = size / 4;
         tft.fillCircle(cx, cy, r, TFT_YELLOW);
-        for (int i = 0; i < 8; i++) {
-            float a = i * PI / 4.0f;
-            int x1 = cx + (int)((r + 2) * cosf(a));
-            int y1 = cy + (int)((r + 2) * sinf(a));
-            int x2 = cx + (int)((r + 8) * cosf(a));
-            int y2 = cy + (int)((r + 8) * sinf(a));
-            tft.drawLine(x1, y1, x2, y2, TFT_ORANGE);
+        
+        // Sun rays (8-directional, pixel-art style)
+        int rayLen = size / 6;
+        // Top
+        tft.fillRect(cx - 1, y + 2, 3, rayLen, TFT_ORANGE);
+        // Bottom
+        tft.fillRect(cx - 1, y + size - rayLen - 2, 3, rayLen, TFT_ORANGE);
+        // Left
+        tft.fillRect(x + 2, cy - 1, rayLen, 3, TFT_ORANGE);
+        // Right
+        tft.fillRect(x + size - rayLen - 2, cy - 1, rayLen, 3, TFT_ORANGE);
+        // Diagonals (pixel blocks)
+        tft.fillRect(x + 4, y + 4, 3, 3, TFT_ORANGE);
+        tft.fillRect(x + size - 7, y + 4, 3, 3, TFT_ORANGE);
+        tft.fillRect(x + 4, y + size - 7, 3, 3, TFT_ORANGE);
+        tft.fillRect(x + size - 7, y + size - 7, 3, 3, TFT_ORANGE);
+    }
+
+    void drawPixelPartlyCloudy(int x, int y, int size) {
+        // Background: cyan
+        tft.fillRect(x, y, size, size, 0x04DF);
+        
+        // Sun peeking from top-right
+        int sunX = x + size * 3 / 4;
+        int sunY = y + size / 4;
+        tft.fillCircle(sunX, sunY, size / 5, TFT_YELLOW);
+        
+        // White cloud (bottom-left, pixel-art puffy shape)
+        int cloudY = y + size / 2;
+        tft.fillRect(x + 4, cloudY, size - 8, size / 3, TFT_WHITE);
+        tft.fillRect(x + 2, cloudY + 2, size - 4, size / 4, TFT_WHITE);
+        // Cloud outline for depth
+        tft.drawRect(x + 4, cloudY, size - 8, size / 3, 0x8C51); // Darker blue outline
+    }
+
+    void drawPixelOvercast(int x, int y, int size) {
+        // Background: light gray
+        tft.fillRect(x, y, size, size, 0xC618); // Light gray
+        
+        // Two layers of gray clouds
+        uint16_t darkGray = 0x8410;
+        uint16_t lightGray = 0xBDF7;
+        
+        // Top cloud
+        tft.fillRect(x + 3, y + 4, size - 6, size / 3, lightGray);
+        tft.fillRect(x + 2, y + 6, size - 4, size / 4, lightGray);
+        
+        // Bottom cloud (darker)
+        tft.fillRect(x + 2, y + size / 2, size - 4, size / 3, darkGray);
+        tft.fillRect(x + 4, y + size / 2 + 2, size - 8, size / 4, darkGray);
+    }
+
+    void drawPixelFoggy(int x, int y, int size) {
+        // Background: pale/hazy
+        tft.fillRect(x, y, size, size, 0xDEDB); // Pale blue-gray
+        
+        // Faded sun with rays
+        int cx = x + size / 2;
+        int cy = y + size / 2;
+        uint16_t paleYellow = 0xFFE0; // Pale yellow
+        tft.fillCircle(cx, cy, size / 4, paleYellow);
+        
+        // Faded rays
+        int rayLen = size / 6;
+        tft.fillRect(cx - 1, y + 3, 2, rayLen, 0xEF7D);
+        tft.fillRect(cx - 1, y + size - rayLen - 3, 2, rayLen, 0xEF7D);
+        tft.fillRect(x + 3, cy - 1, rayLen, 2, 0xEF7D);
+        tft.fillRect(x + size - rayLen - 3, cy - 1, rayLen, 2, 0xEF7D);
+    }
+
+    void drawPixelRain(int x, int y, int size) {
+        // Background: blue
+        tft.fillRect(x, y, size, size, 0x0233); // Darker blue
+        
+        // Raindrops (gray diagonal lines, pixel-art style)
+        uint16_t dropColor = 0x7BEF; // Gray
+        int spacing = size / 5;
+        for (int i = 0; i < 4; i++) {
+            int dx = x + 3 + i * spacing;
+            int dy = y + 5 + (i % 2) * 3;
+            // Diagonal pixel line
+            tft.drawLine(dx, dy, dx + 2, dy + 4, dropColor);
+            tft.drawLine(dx + 1, dy, dx + 3, dy + 4, dropColor);
         }
     }
 
-    void drawCloud(int x, int y, int w, int h, uint16_t color = TFT_LIGHTGREY) {
-        int r = h / 2;
-        // Base rectangle
-        tft.fillRoundRect(x, y + h / 4, w, h / 2, h / 4, color);
-        // Puffs
-        tft.fillCircle(x + r, y + h / 2, r, color);
-        tft.fillCircle(x + w / 2, y + h / 3, r, color);
-        tft.fillCircle(x + w - r, y + h / 2, r, color);
-    }
-
-    void drawRainDrops(int x, int y, int w, int h) {
-        int step = w / 4;
-        for (int i = 1; i <= 3; i++) {
-            int dx = x + i * step;
-            tft.drawLine(dx, y, dx - 3, y + 10, TFT_CYAN);
+    void drawPixelSnow(int x, int y, int size) {
+        // Background: cyan
+        tft.fillRect(x, y, size, size, 0x04DF);
+        
+        // Snowflake (white, pixel-art symmetric)
+        int cx = x + size / 2;
+        int cy = y + size / 2;
+        int armLen = size / 4;
+        
+        // Horizontal and vertical
+        tft.drawFastHLine(cx - armLen, cy, armLen * 2 + 1, TFT_WHITE);
+        tft.drawFastVLine(cx, cy - armLen, armLen * 2 + 1, TFT_WHITE);
+        
+        // Diagonals
+        for (int i = -armLen; i <= armLen; i++) {
+            tft.drawPixel(cx + i, cy + i, TFT_WHITE);
+            tft.drawPixel(cx + i, cy - i, TFT_WHITE);
         }
+        
+        // Cross tips
+        tft.fillRect(cx - 2, cy - armLen - 2, 5, 2, TFT_WHITE);
+        tft.fillRect(cx - 2, cy + armLen + 1, 5, 2, TFT_WHITE);
+        tft.fillRect(cx - armLen - 2, cy - 2, 2, 5, TFT_WHITE);
+        tft.fillRect(cx + armLen + 1, cy - 2, 2, 5, TFT_WHITE);
     }
 
-    void drawSnowFlakes(int x, int y, int w, int h) {
-        int step = w / 4;
-        for (int i = 1; i <= 3; i++) {
-            int cx = x + i * step;
-            int cy = y + 6;
-            tft.drawLine(cx - 3, cy, cx + 3, cy, TFT_WHITE);
-            tft.drawLine(cx, cy - 3, cx, cy + 3, TFT_WHITE);
-            tft.drawLine(cx - 2, cy - 2, cx + 2, cy + 2, TFT_WHITE);
-            tft.drawLine(cx - 2, cy + 2, cx + 2, cy - 2, TFT_WHITE);
-        }
+    void drawPixelThunder(int x, int y, int size) {
+        // Background: purple/dark
+        tft.fillRect(x, y, size, size, 0x4810); // Dark purple
+        
+        // Dark cloud
+        uint16_t cloudColor = 0x8410;
+        tft.fillRect(x + 3, y + 3, size - 6, size / 3, cloudColor);
+        tft.fillRect(x + 2, y + 5, size - 4, size / 4, cloudColor);
+        
+        // Lightning bolt (white/yellow, zig-zag)
+        int cx = x + size / 2;
+        int by = y + size / 3;
+        tft.fillTriangle(cx - 3, by, cx + 2, by, cx - 1, by + 6, TFT_WHITE);
+        tft.fillTriangle(cx - 1, by + 5, cx + 4, by + 5, cx + 1, by + 12, TFT_YELLOW);
     }
 
-    void drawBolt(int x, int y) {
-        // Simple zig-zag bolt
-        tft.fillTriangle(x, y, x + 8, y + 2, x + 2, y + 12, TFT_YELLOW);
-        tft.fillTriangle(x + 2, y + 10, x + 12, y + 12, x + 4, y + 24, TFT_YELLOW);
-    }
-
-    void drawFog(int x, int y, int w) {
-        tft.drawLine(x, y, x + w, y, TFT_LIGHTGREY);
-        tft.drawLine(x, y + 6, x + w, y + 6, TFT_LIGHTGREY);
-        tft.drawLine(x, y + 12, x + w, y + 12, TFT_LIGHTGREY);
-    }
-
-    void drawWind(int x, int y, int w) {
-        tft.drawLine(x, y, x + w - 8, y, TFT_SKYBLUE);
-        tft.drawLine(x + 6, y + 6, x + w, y + 6, TFT_SKYBLUE);
+    void drawPixelWind(int x, int y, int size) {
+        // Background: turquoise/green
+        tft.fillRect(x, y, size, size, 0x07FD); // Turquoise
+        
+        // Swirly wind lines (white, curved pixel-art)
+        uint16_t windColor = TFT_WHITE;
+        int cy = y + size / 2;
+        
+        // Top swirl
+        tft.drawFastHLine(x + 3, cy - 5, size - 10, windColor);
+        tft.drawPixel(x + size - 7, cy - 6, windColor);
+        tft.drawPixel(x + size - 6, cy - 6, windColor);
+        tft.drawFastVLine(x + size - 6, cy - 6, 3, windColor);
+        
+        // Middle swirl
+        tft.drawFastHLine(x + 5, cy, size - 8, windColor);
+        
+        // Bottom swirl
+        tft.drawFastHLine(x + 3, cy + 5, size - 10, windColor);
+        tft.drawPixel(x + size - 7, cy + 6, windColor);
+        tft.drawPixel(x + size - 6, cy + 6, windColor);
+        tft.drawFastVLine(x + size - 6, cy + 4, 3, windColor);
     }
 
     String formatHour12(int hour) {
@@ -179,50 +282,44 @@ public:
         return String(h) + (pm ? "pm" : "am");
     }
 
-    // Weather icons display
+    // Weather icons display (pixel-art style)
     void showWeatherIcons(const uint8_t codes[6]) {
         // Draw 6 icons across the width, below the date line
         const int slotW = Lw / 6;
-        const int iconW = WEATHER_ICON_W;
-        const int iconH = WEATHER_ICON_H;
-        const int baseY = WEATHER_BASE_Y; // top of icons row
-        tft.fillRect(0, baseY - 2, Lw, iconH + 6, TFT_BLACK);
+        const int iconSize = 28; // Square pixel-art icons
+        const int baseY = WEATHER_BASE_Y;
+        tft.fillRect(0, baseY - 2, Lw, iconSize + 6, TFT_BLACK);
 
         for (int i = 0; i < 6; i++) {
             int cx = (slotW * i) + (slotW / 2);
-            int x = cx - iconW / 2;
+            int x = cx - iconSize / 2;
             int y = baseY;
             WeatherIcon ic = mapWmoToIcon(codes[i]);
 
             switch (ic) {
                 case ICON_SUN:
-                    drawSun(cx, y + 12, 8);
+                    drawPixelSun(x, y, iconSize);
                     break;
                 case ICON_PARTLY:
-                    drawSun(cx - 8, y + 8, 6);
-                    drawCloud(x + 6, y + 6, iconW - 8, 16);
+                    drawPixelPartlyCloudy(x, y, iconSize);
                     break;
                 case ICON_CLOUD:
-                    drawCloud(x + 4, y + 6, iconW - 8, 16);
+                    drawPixelOvercast(x, y, iconSize);
                     break;
                 case ICON_RAIN:
-                    drawCloud(x + 4, y + 4, iconW - 8, 16);
-                    drawRainDrops(x + 8, y + 16, iconW - 16, 10);
+                    drawPixelRain(x, y, iconSize);
                     break;
                 case ICON_SNOW:
-                    drawCloud(x + 4, y + 4, iconW - 8, 16);
-                    drawSnowFlakes(x + 8, y + 16, iconW - 16, 10);
+                    drawPixelSnow(x, y, iconSize);
                     break;
                 case ICON_THUNDER:
-                    drawCloud(x + 4, y + 4, iconW - 8, 16);
-                    drawBolt(cx - 4, y + 12);
+                    drawPixelThunder(x, y, iconSize);
                     break;
                 case ICON_FOG:
-                    drawFog(x + 4, y + 8, iconW - 8);
-                    drawFog(x + 4, y + 14, iconW - 8);
+                    drawPixelFoggy(x, y, iconSize);
                     break;
                 case ICON_WIND:
-                    drawWind(x + 4, y + 10, iconW - 8);
+                    drawPixelWind(x, y, iconSize);
                     break;
             }
         }
