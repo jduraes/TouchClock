@@ -44,23 +44,17 @@ platformio run --target upload --upload-port COM6
 
 ### platformio.ini
 The `platformio.ini` defines:
-- **Dependencies:** LVGL v9.2 (UI framework), TFT_eSPI (display), XPT2046 (touch)
-- **Build Flags:** Display driver, LVGL config, pin definitions, SPI speeds
+- **Dependencies:** TFT_eSPI (display), XPT2046 (touch)
+- **Build Flags:** Display driver, pin definitions, SPI speeds
 - **Serial Monitor:** 115200 baud, exception decoder enabled
 
 Key flags:
-- `-DLV_CONF_PATH="${PROJECT_DIR}/lv_conf.h"` – LVGL configuration file
 - `-DILI9341_2_DRIVER` – Display controller type (CRITICAL)
 - `-DTFT_INVERSION_ON` – Color correction for this panel (CRITICAL)
 - `-DSPI_FREQUENCY=55000000` – Display SPI speed (55 MHz)
 
-### lv_conf.h
-LVGL9 configuration file defining:
-- **Color Depth:** 16-bit RGB565
-- **Memory:** 48KB for graphics operations
-- **Fonts:** Montserrat family (sizes 12-48)
-- **Widgets:** All standard LVGL widgets enabled
-- **Themes:** Default and Simple themes enabled
+### Configuration
+No LVGL configuration. TFT_eSPI and XPT2046 are configured via build flags and code in `DisplayManager.h` and `TouchManager.h`.
 
 ### User_Setup.h
 This file is **included first** (before TFT_eSPI's default) to ensure correct pin configuration. It explicitly defines:
@@ -108,8 +102,7 @@ netMgr.eraseStored();  // Clear saved credentials
 
 | Library      | Version | Purpose                          |
 |--------------|---------|----------------------------------|
-| LVGL         | ^9.2.0  | Modern graphics & UI framework   |
-| TFT_eSPI     | ^2.5.31 | Display driver (LVGL backend)    |
+| TFT_eSPI     | ^2.5.31 | Display driver                    |
 | XPT2046      | latest  | Touchscreen driver               |
 | Preferences  | (built-in) | NVS key-value storage       |
 | WiFi         | (built-in) | ESP32 WiFi stack            |
