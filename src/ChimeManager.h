@@ -1,12 +1,11 @@
 #pragma once
 #include <Arduino.h>
+#include <driver/i2s.h>
 
-// Simple Westminster/Big Ben style chime using LEDC tone output.
-// Uses a dedicated LEDC channel and toggles once per hour between 08:00-22:00.
+// Simple Westminster/Big Ben style chime using I2S DAC output for CYD speaker.
+// CYD speaker is on GPIO26 connected to an amplifier; requires I2S DAC mode.
 class ChimeManager {
-    static const uint8_t LEDC_CHANNEL = 4;     // Free channel (0-2 used by RGB LED)
-    static const uint8_t LEDC_TIMER_BITS = 10; // Resolution for tone output
-    int _speakerPin = 25;                      // Default DAC/speaker pin on CYD
+    int _speakerPin = 26;                      // CYD speaker pin (connected to amp)
     int _lastChimedHour = -1;
 
     struct Note { uint16_t freq; uint16_t ms; };
@@ -18,9 +17,18 @@ class ChimeManager {
     static const Note PHRASE4[4];
 
     void playNote(uint16_t freq, uint16_t ms) {
-        ledcWriteTone(LEDC_CHANNEL, freq);
-        delay(ms);
-        ledcWriteTone(LEDC_CHANNEL, 0); // Stop tone
+        Serial.printf("Playing note: %d Hz for %d ms\n", freq, ms);
+        // Generate tone via I2S DAC (simple square wave approximation)
+        unsigned long startMs = millis();
+        int halfPeriodUs = (500000 / freq); // Half period in microseconds
+        
+        while (millis() - startMs < ms) {
+            dacWrite(_speakerPin, 200); // High level
+            delayMicroseconds(halfPeriodUs);
+            dacWrite(_speakerPin, 55);  // Low level
+            delayMicroseconds(halfPeriodUs);
+        }
+        dacWrite(_speakerPin, 128); // Center/silent
         delay(40); // Small gap
     }
 
@@ -38,19 +46,21 @@ class ChimeManager {
     }
 
 public:
-    void begin(int speakerPin = 25) {
+    void begin(int speakerPin = 26) {
         _speakerPin = speakerPin;
-        ledcAttachPin(_speakerPin, LEDC_CHANNEL);
-        ledcSetup(LEDC_CHANNEL, 1000, LEDC_TIMER_BITS); // Base setup; freq overridden per note
+        // No setup needed for DAC - dacWrite handles it
+        Serial.printf("ChimeManager: speaker on GPIO%d (DAC mode)\n", _speakerPin);
     }
 
     // Explicitly play the full Westminster chime followed by a custom strike count (for debug/manual triggers)
     void playDebugChime(int strikes = 3) {
+        Serial.printf("ChimeManager: playDebugChime with %d strikes\n", strikes);
         playPhrase(PHRASE1);
         playPhrase(PHRASE2);
         playPhrase(PHRASE3);
         playPhrase(PHRASE4);
         playHourStrikes(strikes);
+        Serial.println("ChimeManager: playDebugChime complete");
     }
 
     // Call frequently with current local time; will self-debounce to once per hour.
@@ -67,6 +77,7 @@ public:
         // Only fire at the top of the hour and only once per hour
         if (minute == 0 && second < 2 && _lastChimedHour != hour) {
             _lastChimedHour = hour;
+            Serial.printf("ChimeManager: hourly chime at %02d:00\n", hour);
 
             // Full Westminster sequence (phrases 1-4) then hour strikes (12-hour format)
             playPhrase(PHRASE1);
@@ -76,6 +87,7 @@ public:
 
             int strikes = ((hour + 11) % 12) + 1; // Convert 0-23 -> 1-12
             playHourStrikes(strikes);
+            Serial.println("ChimeManager: hourly chime complete");
         }
     }
 };
