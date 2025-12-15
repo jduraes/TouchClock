@@ -5,8 +5,8 @@
 #include <HTTPClient.h>
 #include "DisplayManager.h"
 
-// Fetches tomorrow's weather (first 12 hours) for RG45 7LF via open-meteo (no API key).
-// Displays 6 slots (every 2 hours) using DisplayManager glyphs.
+// Fetches rolling weather for RG45 7LF via open-meteo (no API key).
+// Displays 6 slots (every 2 hours) starting ~2h from now using DisplayManager icons.
 class WeatherManager {
     static constexpr float LAT = 51.370f;   // RG45 7LF approximate latitude (Crowthorne, UK)
     static constexpr float LON = -0.794f;   // RG45 7LF approximate longitude

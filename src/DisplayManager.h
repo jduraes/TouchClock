@@ -145,7 +145,7 @@ public:
         if (h == 0) h = 12;
         bool pm = (hour % 24) >= 12;
         static char buf[6];
-        snprintf(buf, sizeof(buf), "%d% s", h, pm ? "pm" : "am");
+        snprintf(buf, sizeof(buf), "%d%s", h, pm ? "pm" : "am");
         // yields e.g. "12am", "2am", "12pm", "2pm"
         return buf;
     }
@@ -202,7 +202,7 @@ public:
         // Draw icons and 12h labels 5px below
         showWeatherIcons(codes);
         const int slotW = Lw / 6;
-        const int labelY = 165 + 26 + 5; // baseY + iconH + 5px gap
+        const int labelY = 170 + 26 + 5; // baseY + iconH + 5px gap
         tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
         for (int i = 0; i < 6; i++) {
             int cx = (slotW * i) + (slotW / 2);

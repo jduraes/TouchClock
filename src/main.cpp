@@ -91,7 +91,7 @@ void setup() {
         String dateStr = timeMgr.getFormattedDate();
         dispMgr.updateClock(timeStr);
         dispMgr.updateDate(dateStr);
-        weatherMgr.refresh(&dispMgr);  // Fetch and draw tomorrow's forecast
+        weatherMgr.refresh(&dispMgr);  // Fetch and draw rolling forecast starting ~2h from now
         Serial.println(timeStr);
         Serial.println(dateStr);
     } else {
@@ -141,7 +141,7 @@ void loop() {
             dispMgr.updateDate(dateStr);
         }
 
-        // Refresh tomorrow's forecast once per day (after date change)
+        // Refresh forecast once per day (after date change)
         weatherMgr.refresh(&dispMgr);
     }
 
