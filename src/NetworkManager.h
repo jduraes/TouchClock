@@ -1,4 +1,5 @@
 #pragma once
+#include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
 #include <DNSServer.h>
@@ -152,7 +153,7 @@ public:
 
         // Wait for provisioning to complete or timeout
         unsigned long startTime = millis();
-        const unsigned long timeout = 300000;  // 5 minutes
+        const unsigned long timeout = 180000;  // 3 minutes
         
         Serial.println("Waiting for provisioning...");
         while (!_provisioned && (millis() - startTime < timeout)) {
@@ -198,7 +199,12 @@ public:
                 return false;
             }
         } else {
-            Serial.println("Provisioning timeout");
+            Serial.println("Provisioning timeout - rebooting to retry");
+            if (_display) {
+                _display->showStatus("AP timeout, rebooting...");
+            }
+            delay(5000);
+            ESP.restart();
             return false;
         }
     }
