@@ -83,8 +83,7 @@ void setup() {
         
         // Now sync time from NTP
         timeMgr.begin(&dispMgr);
-        dispMgr.drawStaticInterface();
-        dispMgr.updateHeaderText("TouchClock");
+        // Static interface was already drawn at startup; avoid redundant redraws
         
         // Display first time and date immediately
         String timeStr = timeMgr.getFormattedTime();
