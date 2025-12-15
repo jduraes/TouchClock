@@ -3,10 +3,12 @@
 A networked digital clock for the **ESP32 Cheap Yellow Display (ESP32-2432S028)** with Wi-Fi provisioning.
 
 ## Features
+- **Display:** Drawn directly via TFT_eSPI for simplicity and speed
 - **Dynamic Wi-Fi Setup:** Captive portal for easy SSID/password configuration on first boot
 - **Persistent Storage:** Saves Wi-Fi credentials to NVS (Preferences) for automatic reconnection
 - **Real-time Display:** Shows current time in large, readable format (landscape 320×240)
 - **Responsive UI:** Status messages and setup instructions displayed during boot
+- **Touch Input:** Full touchscreen support via XPT2046
 
 ## Hardware
 - **Board:** ESP32-WROOM-32 (ESP32-2432S028 module)
@@ -72,7 +74,7 @@ See [BUILD.md](BUILD.md) for detailed build instructions.
 
 ### Display Driver
 - **Chip:** ILI9341 (revision 2)
-- **Library:** TFT_eSPI (^2.5.33)
+- **Display Driver:** TFT_eSPI (^2.5.31) for low-level display control
 - **Inversion:** Enabled (`TFT_INVERSION_ON`)
 - **Rotation:** Landscape (1)
 
@@ -101,6 +103,10 @@ See [BUILD.md](BUILD.md) for detailed build instructions.
 
 ### Time doesn't sync
 → Ensure WiFi is connected before TimeManager starts (see `setup()`)
+
+## Architecture
+
+Direct drawing via TFT_eSPI (no LVGL). Touch input via XPT2046 with a FreeRTOS task and a small event queue.
 
 ## References
 - [Official ESP32-CYD Repository](https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display)

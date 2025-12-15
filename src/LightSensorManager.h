@@ -13,7 +13,7 @@ private:
     static const uint32_t SAMPLE_INTERVAL = 500;     // Sample every 500ms
     static const uint8_t SAMPLE_COUNT_10SEC = 20;    // 20 samples × 500ms = 10 seconds
     static const uint8_t SAMPLE_COUNT_5SEC = 10;     // 10 samples × 500ms = 5 seconds
-    static const uint16_t DARKNESS_THRESHOLD = 30;   // Turn screen off when sensor reads BELOW this (very bright)
+    static const uint16_t DARKNESS_THRESHOLD = 0;   // Turn screen off when sensor reads BELOW this (very bright)
 
     TaskHandle_t _lightTaskHandle;
     DisplayManager* _display;

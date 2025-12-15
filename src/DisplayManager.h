@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <TFT_eSPI.h>
 #include <SPI.h>
+#include "AppVersion.h"
 
 class DisplayManager {
     TFT_eSPI tft = TFT_eSPI();
@@ -33,17 +34,15 @@ public:
     }
 
     // Redraws the top bar title, divider line, and version label
-    void updateHeaderText(const String& text, const char* version = nullptr) {
+    void updateHeaderText(const String& text) {
         tft.fillRect(0, 0, Lw, 50, TFT_BLACK);
         tft.setTextColor(TFT_YELLOW, TFT_BLACK);
         tft.drawCentreString(text, Lw / 2, 10, 4);
         tft.drawFastHLine(0, 40, Lw, TFT_BLUE);
 
         // Draw version in tiny blue font at top right, above the blue line
-        if (version) {
-            tft.setTextColor(TFT_BLUE, TFT_BLACK);
-            tft.drawString(version, Lw - 35, 25, 1);
-        }
+        tft.setTextColor(TFT_BLUE, TFT_BLACK);
+        tft.drawString(appVersion(), Lw - 35, 25, 1);
     }
 
     void updateClock(String timeStr) {

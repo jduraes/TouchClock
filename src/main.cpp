@@ -5,6 +5,12 @@
 #include "TouchManager.h"
 #include "LightSensorManager.h"
 #include "RGBLedManager.h"
+#include "AppVersion.h"
+
+// Single source of truth: implement appVersion()
+const char* appVersion() {
+    return "v1.0.3"; // TODO: bump here only when releasing
+}
 
 // WiFi credentials are stored/prompted by NetworkManager now
 
@@ -27,6 +33,12 @@ uint16_t lastDisplayedBrightness = 65535;  // Track brightness for display updat
 
 void setup() {
     Serial.begin(115200);
+    Serial.println("=== Memory Diagnostics ===");
+    Serial.printf("PSRAM found: %s\n", psramFound() ? "YES" : "NO");
+    Serial.printf("Heap total/free: %u / %u\n", ESP.getHeapSize(), ESP.getFreeHeap());
+#if CONFIG_SPIRAM_SUPPORT
+    Serial.printf("PSRAM total/free: %u / %u\n", ESP.getPsramSize(), ESP.getFreePsram());
+#endif
     
     dispMgr.begin();
     dispMgr.drawStaticInterface();
@@ -85,6 +97,8 @@ void setup() {
 }
 
 void loop() {
+    // No LVGL — standard loop timing only
+    
     // Check if screen is off and wake on any touch
     static unsigned long lastTouchCheckTime = 0;
     if (!lightSensor.isScreenOn() && (millis() - lastTouchCheckTime > 100)) {
@@ -95,7 +109,7 @@ void loop() {
         }
     }
 
-    // Process touch events from Core 1 queue
+    // Pump touch events from queue (non-LVGL)
     touchMgr.update();
 
     // Get current time with millisecond precision
@@ -148,6 +162,5 @@ void loop() {
         }
     }
     
-    // Moderate loop frequency to reduce CPU usage and render flickering
-    delay(50);  // 20Hz update rate is smooth enough for a clock
+    delay(5);
 }

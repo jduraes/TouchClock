@@ -44,7 +44,7 @@ platformio run --target upload --upload-port COM6
 
 ### platformio.ini
 The `platformio.ini` defines:
-- **Dependencies:** TFT_eSPI (display), AutoConnect (WiFi provisioning)
+- **Dependencies:** TFT_eSPI (display), XPT2046 (touch)
 - **Build Flags:** Display driver, pin definitions, SPI speeds
 - **Serial Monitor:** 115200 baud, exception decoder enabled
 
@@ -52,6 +52,9 @@ Key flags:
 - `-DILI9341_2_DRIVER` – Display controller type (CRITICAL)
 - `-DTFT_INVERSION_ON` – Color correction for this panel (CRITICAL)
 - `-DSPI_FREQUENCY=55000000` – Display SPI speed (55 MHz)
+
+### Configuration
+No LVGL configuration. TFT_eSPI and XPT2046 are configured via build flags and code in `DisplayManager.h` and `TouchManager.h`.
 
 ### User_Setup.h
 This file is **included first** (before TFT_eSPI's default) to ensure correct pin configuration. It explicitly defines:
@@ -99,8 +102,8 @@ netMgr.eraseStored();  // Clear saved credentials
 
 | Library      | Version | Purpose                          |
 |--------------|---------|----------------------------------|
-| TFT_eSPI     | ^2.5.33 | Display driver & graphics        |
-| AutoConnect  | ^1.4.2  | WiFi provisioning & captive portal|
+| TFT_eSPI     | ^2.5.31 | Display driver                    |
+| XPT2046      | latest  | Touchscreen driver               |
 | Preferences  | (built-in) | NVS key-value storage       |
 | WiFi         | (built-in) | ESP32 WiFi stack            |
 | WebServer    | (built-in) | HTTP server for config UI   |
