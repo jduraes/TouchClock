@@ -5,8 +5,8 @@
 #include <HTTPClient.h>
 #include "DisplayManager.h"
 
-// Fetches rolling weather for RG45 7LF via open-meteo (no API key).
-// Displays 6 slots (every 2 hours) starting ~2h from now using DisplayManager icons.
+// Fetches rolling weather via open-meteo (no API key). Adjust coordingates below as needed.
+// Displays 6 slots (every 2 hours) starting ~2h from now, using DisplayManager icons.
 class WeatherManager {
     static constexpr float LAT = 51.370f;   // RG45 7LF approximate latitude (Crowthorne, UK)
     static constexpr float LON = -0.794f;   // RG45 7LF approximate longitude
@@ -15,6 +15,7 @@ class WeatherManager {
     bool _hasData = false;
     int _lastFetchDay = -1;  // tm_mday when last fetched
     int _lastRenderedStartHour = -1; // start hour used in last render
+    time_t _lastFetchEpoch = 0; // epoch seconds of last successful fetch
 
     String buildTodayTomorrowUrl() {
         // Fetch from today to tomorrow (48 hourly entries)
@@ -112,6 +113,8 @@ public:
         int startIndex = startHourLocal; // since array starts at today's 00:00 local
         if (startIndex + 5 >= total) startIndex = max(0, total - 6); // Clamp if near end
 
+        int startHourDisplay = startHourLocal % 24;
+
         for (int i = 0; i < 6; i++) {
             _codes[i] = allCodes[startIndex + i * 2 < total ? startIndex + i * 2 : total - 1];
         }
@@ -119,10 +122,11 @@ public:
         // Record fetch day (today), so we only re-fetch after midnight
         _lastFetchDay = tmNow.tm_mday;
         _hasData = true;
-        _lastRenderedStartHour = startHourLocal;
+        _lastRenderedStartHour = startHourDisplay;
+        _lastFetchEpoch = now;
 
         if (display) {
-            display->showWeatherIconsWithLabels(_codes, startHourLocal);
+            display->showWeatherIconsWithLabels(_codes, startHourDisplay);
         }
         return true;
     }
@@ -141,13 +145,22 @@ public:
     }
 
     void maybeRefreshRolling(const tm& timeinfo, DisplayManager* display) {
-        // Re-render when breaching a 2h boundary; avoid full fetch unless a new day
-        if (!_hasData) return;
+        // Re-fetch at least hourly (or if missing), and re-render at each 2h boundary
+        time_t nowEpoch = time(nullptr);
+        bool needsFetch = (!_hasData) || difftime(nowEpoch, _lastFetchEpoch) >= 3600;
+
         int nextStart = timeinfo.tm_hour + 2;
-        if (nextStart % 2 == 1) nextStart++;
-        if (nextStart != _lastRenderedStartHour) {
-            _lastRenderedStartHour = nextStart;
-            if (display) display->showWeatherIconsWithLabels(_codes, nextStart);
+        if (nextStart % 2 == 1) nextStart++; // next even hour
+        int nextStartDisplay = nextStart % 24;
+
+        if (needsFetch) {
+            refresh(display);
+            return;
+        }
+
+        if (nextStartDisplay != _lastRenderedStartHour) {
+            _lastRenderedStartHour = nextStartDisplay;
+            if (display) display->showWeatherIconsWithLabels(_codes, nextStartDisplay);
         }
     }
 };
