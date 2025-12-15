@@ -3,7 +3,7 @@
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include "AppVersion.h"
-#include "../weather_icons.h"
+#include "weather_icons.h"
 
 class DisplayManager {
     TFT_eSPI tft = TFT_eSPI();

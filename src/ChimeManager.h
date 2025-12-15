@@ -44,6 +44,15 @@ public:
         ledcSetup(LEDC_CHANNEL, 1000, LEDC_TIMER_BITS); // Base setup; freq overridden per note
     }
 
+    // Explicitly play the full Westminster chime followed by a custom strike count (for debug/manual triggers)
+    void playDebugChime(int strikes = 3) {
+        playPhrase(PHRASE1);
+        playPhrase(PHRASE2);
+        playPhrase(PHRASE3);
+        playPhrase(PHRASE4);
+        playHourStrikes(strikes);
+    }
+
     // Call frequently with current local time; will self-debounce to once per hour.
     void maybeChime(const tm& timeinfo) {
         int hour = timeinfo.tm_hour;

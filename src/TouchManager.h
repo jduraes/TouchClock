@@ -2,8 +2,9 @@
 #include <Arduino.h>
 #include <TFT_eSPI.h>
 #include <XPT2046_Touchscreen.h>
+#include "ChimeManager.h"
 
-// Forward declaration
+// Forward declarations
 class DisplayManager;
 
 // Touch event structure for inter-core communication
@@ -17,7 +18,8 @@ struct TouchEvent {
 enum TouchAreaId {
     TOUCH_TITLE = 0,     // Header text area
     TOUCH_VERSION = 1,   // Top right corner (version label)
-    TOUCH_AREA_MAX = 2   // Keep this in sync with area count
+    TOUCH_DEBUG_CHIME = 2, // Top-left corner long-press for chime debug
+    TOUCH_AREA_MAX = 3   // Keep this in sync with area count
 };
 
 struct TouchArea {
@@ -47,12 +49,16 @@ private:
     QueueHandle_t _eventQueue;
     TaskHandle_t _touchTaskHandle;
     DisplayManager* _display;
+    ChimeManager* _chime;
     bool _debugMode;
     uint8_t _versionPressCount;
     unsigned long _lastVersionPressTime;
     uint8_t _titlePressCount;
     unsigned long _lastTitlePressTime;
     bool _titleIsCopyright;
+    bool _pressActive;
+    TouchAreaId _pressArea;
+    unsigned long _pressStartMs;
 
     // Touch areas configuration (can be extended)
     static const int AREA_COUNT = TOUCH_AREA_MAX;
@@ -68,6 +74,12 @@ private:
             .x2 = 320, .y2 = 35,
             .label = "Version",
             .id = TOUCH_VERSION
+        },
+        { // Top-left corner for debug chime (press-and-hold 2s)
+            .x1 = 0, .y1 = 0,
+            .x2 = 70, .y2 = 40,
+            .label = "ChimeDebug",
+            .id = TOUCH_DEBUG_CHIME
         }
     };
 
@@ -141,12 +153,16 @@ public:
           _eventQueue(nullptr),
           _touchTaskHandle(nullptr),
           _display(nullptr),
+          _chime(nullptr),
           _debugMode(false),
           _versionPressCount(0),
           _lastVersionPressTime(0),
           _titlePressCount(0),
           _lastTitlePressTime(0),
-          _titleIsCopyright(false) {}
+          _titleIsCopyright(false),
+          _pressActive(false),
+          _pressArea(TOUCH_TITLE),
+          _pressStartMs(0) {}
 
     ~TouchManager() {
         if (_touchTaskHandle) {
@@ -192,6 +208,14 @@ public:
         Serial.println("TouchManager initialized on Core 1");
     }
 
+    bool hasPendingEvents() {
+        return uxQueueMessagesWaiting(_eventQueue) > 0;
+    }
+
+    void setChimeManager(ChimeManager* chime) {
+        _chime = chime;
+    }
+
     void update() {
         // This should be called from Core 0 (main loop)
         TouchEvent event;
@@ -213,6 +237,34 @@ public:
 
     void handleAreaTouched(const TouchArea& area) {
         unsigned long now = millis();
+
+        // Handle long-press debug chime in top-left corner (2s hold)
+        if (area.id == TOUCH_DEBUG_CHIME) {
+            if (!_pressActive || _pressArea != area.id) {
+                _pressActive = true;
+                _pressArea = area.id;
+                _pressStartMs = now;
+            }
+
+            if (_pressActive && (now - _pressStartMs) >= 2000) {
+                _pressActive = false;
+                _pressArea = TOUCH_TITLE;
+                _pressStartMs = 0;
+
+                if (_display) {
+                    _display->showStatus("Playing Big Ben (debug)");
+                }
+                if (_chime) {
+                    _chime->playDebugChime(3); // 3-hour gongs per request
+                }
+            }
+            return;
+        } else {
+            // Reset long-press state when other areas are tapped
+            _pressActive = false;
+            _pressArea = TOUCH_TITLE;
+            _pressStartMs = 0;
+        }
 
         if (area.id == TOUCH_VERSION) {
             // Track consecutive presses within a 500ms window

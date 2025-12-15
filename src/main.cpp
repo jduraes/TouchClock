@@ -56,6 +56,7 @@ void setup() {
 
     // Initialize touch manager (runs on Core 1)
     touchMgr.begin(&dispMgr);
+    touchMgr.setChimeManager(&chimeMgr);
 
     // Pass display to NetworkManager so it can show connection progress
     netMgr.setDisplay(&dispMgr);
