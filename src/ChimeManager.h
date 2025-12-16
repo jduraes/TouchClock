@@ -1,66 +1,196 @@
 #pragma once
 #include <Arduino.h>
-#include <driver/i2s.h>
 
-// Simple Westminster/Big Ben style chime using I2S DAC output for CYD speaker.
-// CYD speaker is on GPIO26 connected to an amplifier; requires I2S DAC mode.
+// Non-blocking Westminster/Big Ben style chimes using LEDC tone
+// CYD speaker is on GPIO26 connected to an amplifier
 class ChimeManager {
-    int _speakerPin = 26;                      // CYD speaker pin (connected to amp)
+    int _speakerPin = 26;
     int _lastChimedHour = -1;
+
+    // LEDC config
+    const int _ledcChannel = 0; // use channel 0
 
     struct Note { uint16_t freq; uint16_t ms; };
 
-    // Four phrases of the Westminster chime (approximate pitches)
+    // Four phrases of the Westminster chime (G4, C5, D5, E5 combinations)
     static const Note PHRASE1[4];
     static const Note PHRASE2[4];
     static const Note PHRASE3[4];
     static const Note PHRASE4[4];
 
-    void playNote(uint16_t freq, uint16_t ms) {
-        Serial.printf("Playing note: %d Hz for %d ms\n", freq, ms);
-        // Generate tone via I2S DAC (simple square wave approximation)
-        unsigned long startMs = millis();
-        int halfPeriodUs = (500000 / freq); // Half period in microseconds
+    // Non-blocking playback state machine
+    enum PlaybackState {
+        IDLE,
+        PLAYING_NOTE,
+        NOTE_GAP
+    };
+
+    PlaybackState _state = IDLE;
+    const Note* _currentSequence = nullptr;
+    int _sequenceLength = 0;
+    int _sequenceIndex = 0;
+    int _strikeCount = 0;
+    int _strikeIndex = 0;
+    bool _inStrikeMode = false;
+    
+    // Current note playback state
+    uint16_t _currentFreq = 0;
+    unsigned long _noteStartMs = 0;
+    unsigned long _noteDurationMs = 0;
+    
+    // Chime sequence tracking
+    enum ChimePhase {
+        PHASE_NONE,
+        PHASE_1,
+        PHASE_2,
+        PHASE_3,
+        PHASE_4,
+        PHASE_STRIKES,
+        PHASE_COMPLETE
+    };
+    ChimePhase _chimePhase = PHASE_NONE;
+
+    void startNote(uint16_t freq, uint16_t durationMs) {
+        _currentFreq = freq;
+        _noteStartMs = millis();
+        _noteDurationMs = durationMs;
+        // 50% volume: use 8-bit resolution (0-255), set duty to 128
+        ledcSetup(_ledcChannel, freq, 8);
+        ledcWrite(_ledcChannel, 128); // 50% duty cycle
+        _state = PLAYING_NOTE;
+        Serial.printf("ChimeManager: Playing %d Hz for %d ms\n", freq, durationMs);
+    }
+
+    void stopNote() {
+        ledcWrite(_ledcChannel, 0); // stop tone (duty = 0)
+    }
+
+    void startNextNote() {
+        if (_inStrikeMode) {
+            if (_strikeIndex < _strikeCount) {
+                startNote(392, 500); // G4 strike
+                _strikeIndex++;
+                return;
+            } else {
+                // Strikes complete
+                _chimePhase = PHASE_COMPLETE;
+                _state = IDLE;
+                stopNote();
+                Serial.println("ChimeManager: chime sequence complete");
+                return;
+            }
+        }
+
+        // Regular phrase playback
+        if (_sequenceIndex < _sequenceLength) {
+            const Note& note = _currentSequence[_sequenceIndex];
+            startNote(note.freq, note.ms);
+            _sequenceIndex++;
+        } else {
+            // Phrase complete, move to next phase
+            advanceChimePhase();
+        }
+    }
+
+    void advanceChimePhase() {
+        switch (_chimePhase) {
+            case PHASE_1:
+                _chimePhase = PHASE_2;
+                _currentSequence = PHRASE2;
+                _sequenceLength = 4;
+                _sequenceIndex = 0;
+                startNextNote();
+                break;
+            case PHASE_2:
+                _chimePhase = PHASE_3;
+                _currentSequence = PHRASE3;
+                _sequenceLength = 4;
+                _sequenceIndex = 0;
+                startNextNote();
+                break;
+            case PHASE_3:
+                _chimePhase = PHASE_4;
+                _currentSequence = PHRASE4;
+                _sequenceLength = 4;
+                _sequenceIndex = 0;
+                startNextNote();
+                break;
+            case PHASE_4:
+                _chimePhase = PHASE_STRIKES;
+                _inStrikeMode = true;
+                _strikeIndex = 0;
+                startNextNote();
+                break;
+            default:
+                _chimePhase = PHASE_COMPLETE;
+                _state = IDLE;
+                stopNote();
+                break;
+        }
+    }
+
+    void startChimeSequence(int strikes) {
+        if (_state != IDLE) return; // Already playing
         
-        while (millis() - startMs < ms) {
-            dacWrite(_speakerPin, 200); // High level
-            delayMicroseconds(halfPeriodUs);
-            dacWrite(_speakerPin, 55);  // Low level
-            delayMicroseconds(halfPeriodUs);
-        }
-        dacWrite(_speakerPin, 128); // Center/silent
-        delay(40); // Small gap
-    }
-
-    void playPhrase(const Note* phrase) {
-        for (int i = 0; i < 4; i++) {
-            playNote(phrase[i].freq, phrase[i].ms);
-        }
-    }
-
-    void playHourStrikes(int strikes) {
-        for (int i = 0; i < strikes; i++) {
-            playNote(392, 380); // G4 strike
-            delay(120);
-        }
+        Serial.printf("ChimeManager: starting chime sequence with %d strikes\n", strikes);
+        _chimePhase = PHASE_1;
+        _currentSequence = PHRASE1;
+        _sequenceLength = 4;
+        _sequenceIndex = 0;
+        _strikeCount = strikes;
+        _inStrikeMode = false;
+        startNextNote();
     }
 
 public:
     void begin(int speakerPin = 26) {
         _speakerPin = speakerPin;
-        // No setup needed for DAC - dacWrite handles it
-        Serial.printf("ChimeManager: speaker on GPIO%d (DAC mode)\n", _speakerPin);
+        // Setup LEDC with 8-bit resolution for volume control
+        ledcSetup(_ledcChannel, 1000, 8); // initial freq 1kHz, 8-bit resolution
+        ledcAttachPin(_speakerPin, _ledcChannel);
+        ledcWrite(_ledcChannel, 0);
+        Serial.printf("ChimeManager: speaker on GPIO%d (LEDC tone with volume control, non-blocking)\n", _speakerPin);
     }
 
-    // Explicitly play the full Westminster chime followed by a custom strike count (for debug/manual triggers)
+    // Must be called frequently from main loop for non-blocking audio generation
+    void update() {
+        if (_state == IDLE) return;
+
+        unsigned long nowMs = millis();
+
+        if (_state == PLAYING_NOTE) {
+            // Check if note duration complete
+            if (nowMs - _noteStartMs >= _noteDurationMs) {
+                stopNote();
+                _state = NOTE_GAP;
+                _noteStartMs = nowMs;
+                Serial.printf("ChimeManager: Note finished, entering %d ms gap\n", _inStrikeMode ? 150 : 60);
+                return;
+            }
+        } else if (_state == NOTE_GAP) {
+            // Gap between notes in phrases (80ms for rhythm), between strikes (200ms), between phrases (400ms)
+            unsigned long gapMs;
+            if (_inStrikeMode) {
+                gapMs = 200; // longer gap between strikes
+            } else if (_sequenceIndex >= _sequenceLength) {
+                gapMs = 400; // longer gap between phrases
+            } else {
+                gapMs = 80; // normal inter-note gap
+            }
+            if (nowMs - _noteStartMs >= gapMs) {
+                Serial.println("ChimeManager: Gap complete, starting next note");
+                startNextNote();
+            }
+        }
+    }
+
+    bool isPlaying() const {
+        return _state != IDLE;
+    }
+
+    // Play Westminster chime for debug (3 strikes)
     void playDebugChime(int strikes = 3) {
-        Serial.printf("ChimeManager: playDebugChime with %d strikes\n", strikes);
-        playPhrase(PHRASE1);
-        playPhrase(PHRASE2);
-        playPhrase(PHRASE3);
-        playPhrase(PHRASE4);
-        playHourStrikes(strikes);
-        Serial.println("ChimeManager: playDebugChime complete");
+        startChimeSequence(strikes);
     }
 
     // Call frequently with current local time; will self-debounce to once per hour.
@@ -75,19 +205,12 @@ public:
         }
 
         // Only fire at the top of the hour and only once per hour
-        if (minute == 0 && second < 2 && _lastChimedHour != hour) {
+        if (minute == 0 && second < 2 && _lastChimedHour != hour && !isPlaying()) {
             _lastChimedHour = hour;
             Serial.printf("ChimeManager: hourly chime at %02d:00\n", hour);
 
-            // Full Westminster sequence (phrases 1-4) then hour strikes (12-hour format)
-            playPhrase(PHRASE1);
-            playPhrase(PHRASE2);
-            playPhrase(PHRASE3);
-            playPhrase(PHRASE4);
-
             int strikes = ((hour + 11) % 12) + 1; // Convert 0-23 -> 1-12
-            playHourStrikes(strikes);
-            Serial.println("ChimeManager: hourly chime complete");
+            startChimeSequence(strikes);
         }
     }
 };

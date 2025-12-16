@@ -115,6 +115,9 @@ void loop() {
     // Pump touch events from queue (non-LVGL)
     touchMgr.update();
 
+    // Update non-blocking chime audio generation
+    chimeMgr.update();
+
     // Get current time with millisecond precision
     unsigned long currentMillis = millis();
     

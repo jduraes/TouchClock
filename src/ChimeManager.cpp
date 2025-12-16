@@ -1,30 +1,34 @@
 #include "ChimeManager.h"
 
-// Static phrase definitions
+// Westminster chime note frequencies
+// G4 = 392Hz, C5 = 523Hz, D5 = 587Hz, E5 = 659Hz
+
+// Westminster rhythm: dotted quarter (900ms), quarter (600ms)
+// Pattern: long-short-long-short per phrase
 const ChimeManager::Note ChimeManager::PHRASE1[4] = {
-    {392, 320}, // G4
-    {523, 320}, // C5
-    {587, 320}, // D5
-    {392, 320}, // G4
+    {392, 900}, // G4 - dotted quarter
+    {523, 600}, // C5 - quarter
+    {587, 900}, // D5 - dotted quarter
+    {392, 600}, // G4 - quarter
 };
 
 const ChimeManager::Note ChimeManager::PHRASE2[4] = {
-    {392, 320}, // G4
-    {587, 320}, // D5
-    {659, 320}, // E5
-    {523, 320}, // C5
+    {392, 900}, // G4 - dotted quarter
+    {587, 600}, // D5 - quarter
+    {659, 900}, // E5 - dotted quarter
+    {523, 600}, // C5 - quarter
 };
 
 const ChimeManager::Note ChimeManager::PHRASE3[4] = {
-    {392, 320}, // G4
-    {659, 320}, // E5
-    {587, 320}, // D5
-    {523, 320}, // C5
+    {392, 900}, // G4 - dotted quarter
+    {659, 600}, // E5 - quarter
+    {587, 900}, // D5 - dotted quarter
+    {523, 600}, // C5 - quarter
 };
 
 const ChimeManager::Note ChimeManager::PHRASE4[4] = {
-    {392, 320}, // G4
-    {523, 320}, // C5
-    {587, 320}, // D5
-    {392, 320}, // G4
+    {392, 900}, // G4 - dotted quarter
+    {523, 600}, // C5 - quarter
+    {587, 900}, // D5 - dotted quarter
+    {392, 600}, // G4 - quarter
 };

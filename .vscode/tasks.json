@@ -43,6 +43,22 @@
 			"type": "shell",
 			"command": "pio run -e TouchClock",
 			"group": "build"
+		},
+		{
+			"label": "PlatformIO Upload COM4",
+			"type": "shell",
+			"command": "C:\\Users\\miguel\\.platformio\\penv\\Scripts\\platformio.exe",
+			"args": [
+				"run",
+				"--target",
+				"upload",
+				"--upload-port",
+				"COM4"
+			],
+			"problemMatcher": [
+				"$platformio"
+			],
+			"group": "build"
 		}
 	]
 }
