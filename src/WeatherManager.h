@@ -162,11 +162,13 @@ public:
         float allTemps[48];
         int totalTemps = 0;
         if (!parseTemperaturesAll(payload, allTemps, 48, totalTemps)) {
+            Serial.println("WeatherManager: Failed to parse temperatures from API response");
             return false;
         }
         
         // Ensure we have matching data
         if (total != totalTemps) {
+            Serial.printf("WeatherManager: Data mismatch - codes=%d, temps=%d\n", total, totalTemps);
             return false;
         }
 

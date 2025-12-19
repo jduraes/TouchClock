@@ -28,6 +28,8 @@ class DisplayManager {
     const int WEATHER_ICON_W = 36; // matches bitmap assets in weather_icons.h
     const int WEATHER_ICON_H = 26;
     const int WEATHER_LABEL_GAP = 10; // gap between icons and labels
+    const int WEATHER_LABEL_HEIGHT = 14; // height per label line (time and temp)
+    const int WEATHER_LABELS_TOTAL_HEIGHT = 30; // total height for both label lines
 
     // Status & instruction areas
     const int STATUS_BAR_HEIGHT = 30;
@@ -187,10 +189,10 @@ public:
         showWeatherIcons(codes);
         const int slotW = Lw / 6;
         const int labelY = WEATHER_BASE_Y + WEATHER_ICON_H + WEATHER_LABEL_GAP;
-        const int tempY = labelY + 14; // 14px below time labels
+        const int tempY = labelY + WEATHER_LABEL_HEIGHT;
         
         // Clear the label and temp strip
-        tft.fillRect(0, labelY - 2, Lw, 30, TFT_BLACK);
+        tft.fillRect(0, labelY - 2, Lw, WEATHER_LABELS_TOTAL_HEIGHT, TFT_BLACK);
         
         // Draw time labels
         tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
