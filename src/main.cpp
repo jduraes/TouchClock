@@ -10,7 +10,7 @@
 
 // Single source of truth: implement appVersion()
 const char* appVersion() {
-    return "v1.0.5"; // TODO: bump here only when releasing
+    return "v1.0.6";
 }
 
 // --- Objects ---

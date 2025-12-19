@@ -246,7 +246,8 @@ public:
                 _pressStartMs = now;
             }
 
-            if (_pressActive && (now - _pressStartMs) >= 2000) {
+            unsigned long holdTime = now - _pressStartMs;
+            if (_pressActive && holdTime >= 2000) {
                 _pressActive = false;
                 _pressArea = TOUCH_TITLE;
                 _pressStartMs = 0;
@@ -255,7 +256,7 @@ public:
                     _display->showStatus("Playing Big Ben (debug)");
                 }
                 if (_chime) {
-                    _chime->playDebugChime(3); // 3-hour gongs per request
+                    _chime->playDebugChime(3);
                 }
             }
             return;
@@ -275,8 +276,6 @@ public:
             }
             _lastVersionPressTime = now;
 
-            Serial.printf("Version pressed (%d/3)\n", _versionPressCount);
-
             // On 3rd press within window, toggle debug mode
             if (_versionPressCount >= 3) {
                 _debugMode = !_debugMode;
@@ -284,10 +283,8 @@ public:
 
                 if (_debugMode) {
                     drawDebugOverlay();
-                    Serial.println("DEBUG MODE ENABLED");
                 } else {
                     disableDebugOverlay();
-                    Serial.println("DEBUG MODE DISABLED");
                 }
             }
         } else if (area.id == TOUCH_TITLE) {

@@ -13,7 +13,7 @@ private:
     static const uint32_t SAMPLE_INTERVAL = 500;     // Sample every 500ms
     static const uint8_t SAMPLE_COUNT_10SEC = 20;    // 20 samples × 500ms = 10 seconds
     static const uint8_t SAMPLE_COUNT_5SEC = 10;     // 10 samples × 500ms = 5 seconds
-    static const uint16_t DARKNESS_THRESHOLD = 30;   // Turn screen off when sensor reads BELOW this (very bright)
+    static const uint32_t CALIBRATION_PERIOD_MS = 10000; // 10-second calibration on startup
 
     TaskHandle_t _lightTaskHandle;
     DisplayManager* _display;
@@ -22,12 +22,15 @@ private:
     // Light level tracking
     uint16_t _lightSamples10Sec[SAMPLE_COUNT_10SEC];  // 10-second rolling buffer
     uint8_t _sampleIndex;
-    uint16_t _baselineLight;       // Baseline ambient light level
+    uint16_t _baselineLight;       // Baseline ambient light level (measured during calibration)
+    uint16_t _darknesThreshold;    // Calculated as half of baseline - light above this turns screen off
     uint16_t _currentAverage5Sec;  // 5-second rolling average (for screen brightness control)
     uint16_t _currentAverage10Sec; // 10-second rolling average (absolute brightness display)
     uint16_t _latestRawReading;    // Most recent raw sensor reading
     bool _screenOn;
     unsigned long _lastSampleTime;
+    unsigned long _calibrationStartTime;  // When calibration started
+    bool _isCalibrating;                   // Currently in calibration period
     
     // Screen-off debouncing
     unsigned long _brightLightStartTime;  // When sensor first dropped below threshold
@@ -42,7 +45,9 @@ private:
     }
 
     void lightTaskLoop() {
-        // Initialize baseline on first run
+        // Initialize calibration period
+        _calibrationStartTime = millis();
+        _isCalibrating = true;
         _baselineLight = readLightLevel();
         _currentAverage5Sec = _baselineLight;
         _currentAverage10Sec = _baselineLight;
@@ -52,9 +57,7 @@ private:
         }
         _sampleIndex = 0;
 
-        Serial.printf("LightSensor baseline: %d\n", _baselineLight);
-
-        unsigned long lastDebugPrint = 0;
+        Serial.printf("LightSensor: Starting 10-second calibration period...\n");
 
         while (1) {
             unsigned long now = millis();
@@ -82,17 +85,32 @@ private:
                 }
                 _currentAverage10Sec = sum10Sec / SAMPLE_COUNT_10SEC;
 
+                // During calibration, use 10-second average as baseline
+                if (_isCalibrating) {
+                    _baselineLight = _currentAverage10Sec;
+                    // Calculate darkness threshold as half of baseline
+                    _darknesThreshold = _baselineLight / 2;
+                    
+                    // Check if calibration period is complete
+                    if (now - _calibrationStartTime >= CALIBRATION_PERIOD_MS) {
+                        _isCalibrating = false;
+                        Serial.printf("LightSensor: Calibration complete!\n");
+                        Serial.printf("  Baseline light level: %d\n", _baselineLight);
+                        Serial.printf("  Darkness threshold (flashlight): %d\n", _darknesThreshold);
+                    }
+                }
+
                 // Call brightness callback with 5-second average for RGB LED
                 if (_brightnessCallback) {
                     _brightnessCallback(_currentAverage5Sec);
                 }
 
-                // Screen-off logic: Turn screen off when bright light detected for 2+ seconds
-                if (_screenOn) {  // Only check if screen is currently on
+                // Screen-off logic: only check AFTER calibration is complete
+                if (!_isCalibrating && _screenOn) {  // Only check if screen is currently on
                     if (now - _lastScreenCheckTime >= SCREEN_CHECK_INTERVAL_MS) {
                         _lastScreenCheckTime = now;
                         
-                        if (_latestRawReading < DARKNESS_THRESHOLD) {  // Sensor reads BELOW 30 = very bright
+                        if (_latestRawReading < _darknesThreshold) {  // Sensor reads BELOW threshold = very bright
                             if (_brightLightStartTime == 0) {
                                 _brightLightStartTime = now;  // Record when bright light first detected
                             } else if (now - _brightLightStartTime >= BRIGHT_LIGHT_DEBOUNCE_MS) {
@@ -104,13 +122,7 @@ private:
                     }
                 }
 
-                // Debug: print values every 2 seconds
-                if (now - lastDebugPrint >= 2000) {
-                    lastDebugPrint = now;
-                    Serial.printf("DEBUG Light: raw=%d, avg5s=%d, avg10s=%d, threshold=%d, screen=%s\n", 
-                        _latestRawReading, _currentAverage5Sec, _currentAverage10Sec, DARKNESS_THRESHOLD,
-                        _screenOn ? "ON" : "OFF");
-                }
+
             }
 
             // Poll interval: 100ms (actual sampling at SAMPLE_INTERVAL)
@@ -144,11 +156,14 @@ public:
           _brightnessCallback(nullptr),
           _sampleIndex(0),
           _baselineLight(0),
+          _darknesThreshold(0),
           _currentAverage5Sec(0),
           _currentAverage10Sec(0),
           _latestRawReading(0),
           _screenOn(true),
           _lastSampleTime(0),
+          _calibrationStartTime(0),
+          _isCalibrating(false),
           _brightLightStartTime(0),
           _lastScreenCheckTime(0) {}
 
@@ -187,10 +202,6 @@ public:
             Serial.println("SCREEN ON - Woken by touch");
             _screenOn = true;
             digitalWrite(TFT_BL, HIGH);  // Turn on backlight
-            
-            // Reset baseline to current light level when waking
-            _baselineLight = _currentAverage5Sec;
-            Serial.printf("LightSensor baseline reset to: %d\n", _baselineLight);
             
             // Reset bright-light debounce timer
             _brightLightStartTime = 0;

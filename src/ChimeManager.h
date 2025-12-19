@@ -1,14 +1,16 @@
 #pragma once
 #include <Arduino.h>
+#include <cmath>
 
 // Non-blocking Westminster/Big Ben style chimes using LEDC tone
-// CYD speaker is on GPIO26 connected to an amplifier
+// CYD speaker is on GPIO26
 class ChimeManager {
-    int _speakerPin = 26;
+    int _speakerPin = 26;  // CYD speaker on GPIO26
     int _lastChimedHour = -1;
 
     // LEDC config
-    const int _ledcChannel = 0; // use channel 0
+    const int _ledcChannel = 0;
+    mutable uint8_t _volumePercent = 10; // Volume as percentage 0-100
 
     struct Note { uint16_t freq; uint16_t ms; };
 
@@ -54,15 +56,16 @@ class ChimeManager {
         _currentFreq = freq;
         _noteStartMs = millis();
         _noteDurationMs = durationMs;
-        // 50% volume: use 8-bit resolution (0-255), set duty to 128
-        ledcSetup(_ledcChannel, freq, 8);
-        ledcWrite(_ledcChannel, 128); // 50% duty cycle
         _state = PLAYING_NOTE;
-        Serial.printf("ChimeManager: Playing %d Hz for %d ms\n", freq, durationMs);
+        
+        // Use LEDC with volume control via duty cycle (0-255)
+        uint8_t duty = map(_volumePercent, 0, 100, 0, 255);
+        ledcSetup(_ledcChannel, freq, 8);
+        ledcWrite(_ledcChannel, duty);
     }
 
     void stopNote() {
-        ledcWrite(_ledcChannel, 0); // stop tone (duty = 0)
+        ledcWrite(_ledcChannel, 0); // Stop tone
     }
 
     void startNextNote() {
@@ -76,7 +79,6 @@ class ChimeManager {
                 _chimePhase = PHASE_COMPLETE;
                 _state = IDLE;
                 stopNote();
-                Serial.println("ChimeManager: chime sequence complete");
                 return;
             }
         }
@@ -132,7 +134,6 @@ class ChimeManager {
     void startChimeSequence(int strikes) {
         if (_state != IDLE) return; // Already playing
         
-        Serial.printf("ChimeManager: starting chime sequence with %d strikes\n", strikes);
         _chimePhase = PHASE_1;
         _currentSequence = PHRASE1;
         _sequenceLength = 4;
@@ -145,11 +146,10 @@ class ChimeManager {
 public:
     void begin(int speakerPin = 26) {
         _speakerPin = speakerPin;
-        // Setup LEDC with 8-bit resolution for volume control
-        ledcSetup(_ledcChannel, 1000, 8); // initial freq 1kHz, 8-bit resolution
+        // Setup LEDC
+        ledcSetup(_ledcChannel, 1000, 8);
         ledcAttachPin(_speakerPin, _ledcChannel);
         ledcWrite(_ledcChannel, 0);
-        Serial.printf("ChimeManager: speaker on GPIO%d (LEDC tone with volume control, non-blocking)\n", _speakerPin);
     }
 
     // Must be called frequently from main loop for non-blocking audio generation
@@ -164,7 +164,6 @@ public:
                 stopNote();
                 _state = NOTE_GAP;
                 _noteStartMs = nowMs;
-                Serial.printf("ChimeManager: Note finished, entering %d ms gap\n", _inStrikeMode ? 150 : 60);
                 return;
             }
         } else if (_state == NOTE_GAP) {
@@ -178,7 +177,6 @@ public:
                 gapMs = 80; // normal inter-note gap
             }
             if (nowMs - _noteStartMs >= gapMs) {
-                Serial.println("ChimeManager: Gap complete, starting next note");
                 startNextNote();
             }
         }
@@ -186,6 +184,12 @@ public:
 
     bool isPlaying() const {
         return _state != IDLE;
+    }
+
+    // Set volume (0-100 percentage)
+    void setVolume(uint8_t percent) {
+        if (percent > 100) percent = 100;
+        _volumePercent = percent;
     }
 
     // Play Westminster chime for debug (3 strikes)
@@ -207,7 +211,6 @@ public:
         // Only fire at the top of the hour and only once per hour
         if (minute == 0 && second < 2 && _lastChimedHour != hour && !isPlaying()) {
             _lastChimedHour = hour;
-            Serial.printf("ChimeManager: hourly chime at %02d:00\n", hour);
 
             int strikes = ((hour + 11) % 12) + 1; // Convert 0-23 -> 1-12
             startChimeSequence(strikes);

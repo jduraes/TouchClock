@@ -133,9 +133,15 @@ public:
     }
 
     String formatHour12(int hour) {
+        // Normalize to 0-23 range
+        hour = hour % 24;
+        if (hour < 0) hour += 24;
+        
+        // Convert to 12-hour format
         int h = hour % 12;
         if (h == 0) h = 12;
-        bool pm = (hour % 24) >= 12;
+        bool pm = hour >= 12;
+        
         // yields e.g. "12am", "2am", "12pm", "2pm"
         return String(h) + (pm ? "pm" : "am");
     }
@@ -165,6 +171,8 @@ public:
         showWeatherIcons(codes);
         const int slotW = Lw / 6;
         const int labelY = WEATHER_BASE_Y + WEATHER_ICON_H + WEATHER_LABEL_GAP; // baseY + iconH + gap
+        // Clear the label strip to avoid ghost characters when shorter labels (e.g., "2pm") overwrite longer ones (e.g., "12pm")
+        tft.fillRect(0, labelY - 2, Lw, 16, TFT_BLACK);
         tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
         for (int i = 0; i < 6; i++) {
             int cx = (slotW * i) + (slotW / 2);
