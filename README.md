@@ -1,118 +1,48 @@
-# TouchClock
+# TouchClock Firmware
 
-A networked digital clock for the **ESP32 Cheap Yellow Display (ESP32-2432S028)** with Wi-Fi provisioning.
+TouchClock is an open-source smart desk clock for ESP32 microcontrollers. It features:
+- Color TFT display (TFT_eSPI)
+- Touchscreen controls (XPT2046)
+- RGB LED ambient light
+- Wi-Fi connectivity (provisioning & captive portal)
+- Ambient light sensing
+- NTP time syncing
+- Weather updates via internet
 
 ## Features
-- **Display:** Drawn directly via TFT_eSPI for simplicity and speed
-- **Dynamic Wi-Fi Setup:** Captive portal for easy SSID/password configuration on first boot
-- **Persistent Storage:** Saves Wi-Fi credentials to NVS (Preferences) for automatic reconnection
-- **Real-time Display:** Shows current time in large, readable format (landscape 320×240)
-- **Responsive UI:** Status messages and setup instructions displayed during boot
-- **Touch Input:** Full touchscreen support via XPT2046
+- Wi-Fi setup and auto-reconnection
+- Local time display and weather data
+- Touch navigation for settings and info
+- Automatic screen brightness via ambient sensor
+- RGB LED notifications
 
-## Hardware
-- **Board:** ESP32-WROOM-32 (ESP32-2432S028 module)
-- **Display:** 3.2" TFT LCD, 320×240, ILI9341 controller with inversion
-- **Power:** 5V USB (via micro-USB)
-- **Touch:** Capacitive touch panel (optional)
+## Hardware Requirements
+- ESP32 microcontroller
+- 320x240 TFT display (ILI9341 controller)
+- Touchscreen (XPT2046)
+- RGB LED
+- Ambient light sensor
 
-See [HARDWARE.md](HARDWARE.md) for detailed pinout and configuration.
+## Building & Flashing
+Flash using [PlatformIO](https://platformio.org/) for VSCode. All dependencies are managed via `platformio.ini`.
 
-## Quick Start
-
-### Prerequisites
-- PlatformIO (VS Code extension or CLI)
-- USB cable + Serial driver
-
-### First Boot
-1. Connect ESP32 via USB
-2. Build & upload: `platformio run --target upload --upload-port COM6`
-3. Device creates `TouchClock-Setup` Wi-Fi AP (no password)
-4. Connect to `TouchClock-Setup` from your phone/computer
-5. Captive portal opens automatically → configure your Wi-Fi SSID
-6. Device connects and stores credentials
-
-### Subsequent Boots
-- Device auto-connects to saved Wi-Fi
-- Skips captive portal if connection succeeds
-- Falls back to setup if stored credentials fail
-
-## Development
-
-### Project Layout
-```
-src/
-├── main.cpp           # Setup & main loop
-├── DisplayManager.h    # TFT display operations
-├── NetworkManager.h    # Wi-Fi + captive portal
-└── TimeManager.h       # Time sync & formatting
-```
-
-### Building
 ```bash
-# Build & upload
-platformio run --target upload --upload-port COM6
-
-# Serial monitor
-platformio device monitor --port COM6 --baud 115200
-
-# Clean build
-platformio run --target clean
-platformio run
+# Build the firmware
+pio run
+# Upload to device
+pio run --target upload
 ```
 
-### Configuration
-Edit `platformio.ini` to adjust:
-- SPI display frequency (currently 55 MHz)
-- Pin assignments (MISO, MOSI, SCLK, CS, DC, BL)
-- Font loading options
-- WiFi AP name (`TouchClock-Setup`)
+## Source Files
 
-See [BUILD.md](BUILD.md) for detailed build instructions.
-
-## Technical Details
-
-### Display Driver
-- **Chip:** ILI9341 (revision 2)
-- **Display Driver:** TFT_eSPI (^2.5.31) for low-level display control
-- **Inversion:** Enabled (`TFT_INVERSION_ON`)
-- **Rotation:** Landscape (1)
-
-### WiFi Provisioning
-- **Method:** AutoConnect captive portal (open AP, no password)
-- **Persistence:** NVS Preferences (namespace: "touchclock")
-- **Fallback:** If stored credentials fail, portal re-activates
-
-### Time Synchronization
-- **Method:** NTP (SNTP) via WiFi
-- **Zone:** UTC or configured offset
-- **Format:** 24-hour HH:MM:SS
-
-## Troubleshooting
-
-### Display shows washed-out colors
-→ Verify `TFT_INVERSION_ON` is set in `platformio.ini`
-
-### WiFi captive portal appears every boot
-→ Stored credentials may be invalid. Either:
-   - Reconfigure via captive portal with new SSID
-   - Or erase stored creds: call `netMgr.eraseStored()` then reboot
-
-### Can't connect to COM6
-→ Check Device Manager; may need USB serial driver installed
-
-### Time doesn't sync
-→ Ensure WiFi is connected before TimeManager starts (see `setup()`)
-
-## Architecture
-
-Direct drawing via TFT_eSPI (no LVGL). Touch input via XPT2046 with a FreeRTOS task and a small event queue.
-
-## References
-- [Official ESP32-CYD Repository](https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display)
-- [TFT_eSPI](https://github.com/Bodmer/TFT_eSPI)
-- [AutoConnect](https://hieromon.github.io/AutoConnect/)
-- Example projects: `references/ESP32-Cheap-Yellow-Display/Examples/Basics/`
-
-## License
-As per original project. See LICENSE file.
+src/
+├── main.cpp              # Main application & setup
+├── AppVersion.h          # Version management
+├── DisplayManager.h      # Display control (TFT_eSPI)
+├── LightSensorManager.h  # Ambient light sensor logic
+├── NetworkManager.h      # Wi-Fi provisioning & captive portal
+├── RGBLedManager.h       # RGB LED control
+├── TimeManager.h         # NTP sync & time formatting
+├── TouchManager.h        # Touchscreen handling (XPT2046)
+├── WeatherManager.h      # Weather data fetch & display
+├── weather_icons.h       # Bitmap assets for weather display
