@@ -180,6 +180,37 @@ public:
             tft.drawCentreString(formatHour12(hour), cx, labelY, 2);
         }
     }
+
+    // Show weather icons with 12-hour labels and temperature in Celsius
+    void showWeatherIconsWithLabelsAndTemps(const uint8_t codes[6], const float temps[6], int startHour) {
+        // Draw icons
+        showWeatherIcons(codes);
+        const int slotW = Lw / 6;
+        const int labelY = WEATHER_BASE_Y + WEATHER_ICON_H + WEATHER_LABEL_GAP;
+        const int tempY = labelY + 14; // 14px below time labels
+        
+        // Clear the label and temp strip
+        tft.fillRect(0, labelY - 2, Lw, 30, TFT_BLACK);
+        
+        // Draw time labels
+        tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
+        for (int i = 0; i < 6; i++) {
+            int cx = (slotW * i) + (slotW / 2);
+            int hour = (startHour + i * 2) % 24;
+            tft.drawCentreString(formatHour12(hour), cx, labelY, 2);
+        }
+        
+        // Draw temperature labels
+        tft.setTextColor(TFT_CYAN, TFT_BLACK);
+        for (int i = 0; i < 6; i++) {
+            int cx = (slotW * i) + (slotW / 2);
+            // Format temperature as integer with degree symbol (°C)
+            String tempStr = String((int)round(temps[i]));
+            tempStr += char(247);  // degree symbol in extended ASCII
+            tempStr += "C";
+            tft.drawCentreString(tempStr, cx, tempY, 2);
+        }
+    }
     
     void showStatus(String status) {
         // Only redraw if status text actually changed
