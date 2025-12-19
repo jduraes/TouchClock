@@ -41,6 +41,9 @@ class DisplayManager {
     const int BRIGHTNESS_AREA_H = 20;
     const int BRIGHTNESS_TEXT_X = 2;
     const int BRIGHTNESS_TEXT_Y = 43;
+    
+    // Special characters
+    static constexpr char DEGREE_SYMBOL = 247; // Extended ASCII degree symbol (°)
 
 public:
     void begin() {
@@ -208,7 +211,7 @@ public:
             int cx = (slotW * i) + (slotW / 2);
             // Format temperature as integer with degree symbol (°C)
             String tempStr = String((int)round(temps[i]));
-            tempStr += char(247);  // degree symbol in extended ASCII
+            tempStr += DEGREE_SYMBOL;
             tempStr += "C";
             tft.drawCentreString(tempStr, cx, tempY, 2);
         }

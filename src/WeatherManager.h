@@ -99,6 +99,7 @@ class WeatherManager {
             
             float val = 0.0f;
             bool foundDigit = false;
+            
             // Parse integer part
             while (idx < len && isDigit(payload[idx])) {
                 val = val * 10.0f + (payload[idx] - '0');
