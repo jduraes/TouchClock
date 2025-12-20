@@ -12,6 +12,7 @@ class WeatherManager {
     static constexpr float LON = -0.794f;   // RG45 7LF approximate longitude
 
     uint8_t _codes[6] = {0, 0, 0, 0, 0, 0};
+    float _temps[6] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};  // Temperature in Celsius for each slot
     bool _hasData = false;
     int _lastFetchDay = -1;  // tm_mday when last fetched
     int _lastRenderedStartHour = -1; // start hour used in last render
@@ -36,7 +37,7 @@ class WeatherManager {
         url += String(LAT, 3);
         url += "&longitude=";
         url += String(LON, 3);
-        url += "&hourly=weathercode&start_date=";
+        url += "&hourly=weathercode,temperature_2m&start_date=";
         url += String(dateToday);
         url += "&end_date=";
         url += String(dateTomorrow);
@@ -76,6 +77,60 @@ class WeatherManager {
         return true;
     }
 
+    bool parseTemperaturesAll(const String& payload, float outAll[], int maxCount, int& outCount) {
+        const char* key = "\"temperature_2m\":[";
+        int idx = payload.indexOf(key);
+        if (idx < 0) return false;
+        idx += strlen(key);
+        int len = payload.length();
+
+        int count = 0;
+        while (idx < len && count < maxCount) {
+            // Skip whitespace
+            while (idx < len && (payload[idx] == ' ' || payload[idx] == '\n' || payload[idx] == '\r')) idx++;
+            if (idx >= len) return false;
+
+            // Parse float value (can be negative)
+            bool negative = false;
+            if (payload[idx] == '-') {
+                negative = true;
+                idx++;
+            }
+            
+            float val = 0.0f;
+            bool foundDigit = false;
+            
+            // Parse integer part
+            while (idx < len && isDigit(payload[idx])) {
+                val = val * 10.0f + (payload[idx] - '0');
+                idx++;
+                foundDigit = true;
+            }
+            
+            // Parse decimal part if exists
+            if (idx < len && payload[idx] == '.') {
+                idx++;
+                float decimal = 0.1f;
+                while (idx < len && isDigit(payload[idx])) {
+                    val += (payload[idx] - '0') * decimal;
+                    decimal *= 0.1f;
+                    idx++;
+                    foundDigit = true;
+                }
+            }
+            
+            if (!foundDigit) return false;
+            outAll[count++] = negative ? -val : val;
+
+            // Move to next comma for next value
+            int comma = payload.indexOf(',', idx);
+            if (comma < 0) break; // End of array
+            idx = comma + 1;
+        }
+        outCount = count;
+        return true;
+    }
+
 public:
     bool refresh(DisplayManager* display) {
         if (WiFi.status() != WL_CONNECTED) return false;
@@ -104,6 +159,20 @@ public:
             return false;
         }
 
+        // Parse up to 48 hourly temperatures (today+tomorrow)
+        float allTemps[48];
+        int totalTemps = 0;
+        if (!parseTemperaturesAll(payload, allTemps, 48, totalTemps)) {
+            Serial.println("WeatherManager: Failed to parse temperatures from API response");
+            return false;
+        }
+        
+        // Ensure we have matching data
+        if (total != totalTemps) {
+            Serial.printf("WeatherManager: Data mismatch - codes=%d, temps=%d\n", total, totalTemps);
+            return false;
+        }
+
         // Determine start hour: 2h from now, round to next even hour boundary
         time_t now = time(nullptr);
         struct tm tmNow;
@@ -116,7 +185,10 @@ public:
         int startHourDisplay = startHourLocal % 24;
 
         for (int i = 0; i < 6; i++) {
-            _codes[i] = allCodes[startIndex + i * 2 < total ? startIndex + i * 2 : total - 1];
+            int idx = startIndex + i * 2;
+            if (idx >= total) idx = total - 1;
+            _codes[i] = allCodes[idx];
+            _temps[i] = allTemps[idx];
         }
 
         // Record fetch day (today), so we only re-fetch after midnight
@@ -126,14 +198,14 @@ public:
         _lastFetchEpoch = now;
 
         if (display) {
-            display->showWeatherIconsWithLabels(_codes, startHourDisplay);
+            display->showWeatherIconsWithLabelsAndTemps(_codes, _temps, startHourDisplay);
         }
         return true;
     }
 
     void show(DisplayManager* display) {
         if (_hasData && display) {
-            display->showWeatherIconsWithLabels(_codes, _lastRenderedStartHour >= 0 ? _lastRenderedStartHour : 0);
+            display->showWeatherIconsWithLabelsAndTemps(_codes, _temps, _lastRenderedStartHour >= 0 ? _lastRenderedStartHour : 0);
         }
     }
 
@@ -160,7 +232,7 @@ public:
 
         if (nextStartDisplay != _lastRenderedStartHour) {
             _lastRenderedStartHour = nextStartDisplay;
-            if (display) display->showWeatherIconsWithLabels(_codes, nextStartDisplay);
+            if (display) display->showWeatherIconsWithLabelsAndTemps(_codes, _temps, nextStartDisplay);
         }
     }
 };

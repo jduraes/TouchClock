@@ -28,6 +28,8 @@ class DisplayManager {
     const int WEATHER_ICON_W = 36; // matches bitmap assets in weather_icons.h
     const int WEATHER_ICON_H = 26;
     const int WEATHER_LABEL_GAP = 10; // gap between icons and labels
+    const int WEATHER_LABEL_HEIGHT = 14; // height per label line (time and temp)
+    const int WEATHER_LABELS_TOTAL_HEIGHT = 30; // total height for both label lines
 
     // Status & instruction areas
     const int STATUS_BAR_HEIGHT = 30;
@@ -39,6 +41,9 @@ class DisplayManager {
     const int BRIGHTNESS_AREA_H = 20;
     const int BRIGHTNESS_TEXT_X = 2;
     const int BRIGHTNESS_TEXT_Y = 43;
+    
+    // Special characters
+    static constexpr char DEGREE_SYMBOL = 247; // Extended ASCII degree symbol (°)
 
 public:
     void begin() {
@@ -178,6 +183,37 @@ public:
             int cx = (slotW * i) + (slotW / 2);
             int hour = (startHour + i * 2) % 24;
             tft.drawCentreString(formatHour12(hour), cx, labelY, 2);
+        }
+    }
+
+    // Show weather icons with 12-hour labels and temperature in Celsius
+    void showWeatherIconsWithLabelsAndTemps(const uint8_t codes[6], const float temps[6], int startHour) {
+        // Draw icons
+        showWeatherIcons(codes);
+        const int slotW = Lw / 6;
+        const int labelY = WEATHER_BASE_Y + WEATHER_ICON_H + WEATHER_LABEL_GAP;
+        const int tempY = labelY + WEATHER_LABEL_HEIGHT;
+        
+        // Clear the label and temp strip
+        tft.fillRect(0, labelY - 2, Lw, WEATHER_LABELS_TOTAL_HEIGHT, TFT_BLACK);
+        
+        // Draw time labels
+        tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
+        for (int i = 0; i < 6; i++) {
+            int cx = (slotW * i) + (slotW / 2);
+            int hour = (startHour + i * 2) % 24;
+            tft.drawCentreString(formatHour12(hour), cx, labelY, 2);
+        }
+        
+        // Draw temperature labels
+        tft.setTextColor(TFT_CYAN, TFT_BLACK);
+        for (int i = 0; i < 6; i++) {
+            int cx = (slotW * i) + (slotW / 2);
+            // Format temperature as integer with degree symbol (°C)
+            String tempStr = String((int)round(temps[i]));
+            tempStr += DEGREE_SYMBOL;
+            tempStr += "C";
+            tft.drawCentreString(tempStr, cx, tempY, 2);
         }
     }
     
