@@ -24,10 +24,10 @@ class DisplayManager {
     const int DATE_Y = 120;         // centre Y for date line
 
     // Weather icons row
-    const int WEATHER_BASE_Y = 155; // top of icons row
+    const int WEATHER_BASE_Y = 150; // top of icons row
     const int WEATHER_ICON_W = 36; // matches bitmap assets in weather_icons.h
     const int WEATHER_ICON_H = 26;
-    const int WEATHER_LABEL_GAP = 10; // gap between icons and labels
+    const int WEATHER_LABEL_GAP = 6; // gap between icons and labels
     const int WEATHER_LABEL_HEIGHT = 14; // height per label line (time and temp)
     const int WEATHER_LABELS_TOTAL_HEIGHT = 30; // total height for both label lines
 
@@ -154,14 +154,14 @@ public:
     // Weather icons display (PROGMEM bitmaps)
     void showWeatherIcons(const uint8_t codes[6]) {
         // Draw 6 icons across the width, below the date line
-        const int slotW = Lw / 6;
+        const float slotW = Lw / 6.0f;              // use float to center precisely
         const int iconW = WEATHER_ICON_W;
         const int iconH = WEATHER_ICON_H;
         const int baseY = WEATHER_BASE_Y;
         tft.fillRect(0, baseY - 2, Lw, iconH + 6, TFT_BLACK);
 
         for (int i = 0; i < 6; i++) {
-            int cx = (slotW * i) + (slotW / 2);
+            int cx = (int)round(slotW * (i + 0.5f)); // centre per slot without accumulating truncation
             int x = cx - iconW / 2;
             int y = baseY;
             WeatherIcon ic = mapWmoToIcon(codes[i]);
@@ -174,13 +174,13 @@ public:
     void showWeatherIconsWithLabels(const uint8_t codes[6], int startHour) {
         // Draw icons and 12h labels 5px below
         showWeatherIcons(codes);
-        const int slotW = Lw / 6;
+        const float slotW = Lw / 6.0f;
         const int labelY = WEATHER_BASE_Y + WEATHER_ICON_H + WEATHER_LABEL_GAP; // baseY + iconH + gap
         // Clear the label strip to avoid ghost characters when shorter labels (e.g., "2pm") overwrite longer ones (e.g., "12pm")
         tft.fillRect(0, labelY - 2, Lw, 16, TFT_BLACK);
         tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
         for (int i = 0; i < 6; i++) {
-            int cx = (slotW * i) + (slotW / 2);
+            int cx = (int)round(slotW * (i + 0.5f));
             int hour = (startHour + i * 2) % 24;
             tft.drawCentreString(formatHour12(hour), cx, labelY, 2);
         }
@@ -190,7 +190,7 @@ public:
     void showWeatherIconsWithLabelsAndTemps(const uint8_t codes[6], const float temps[6], int startHour) {
         // Draw icons
         showWeatherIcons(codes);
-        const int slotW = Lw / 6;
+        const float slotW = Lw / 6.0f;
         const int labelY = WEATHER_BASE_Y + WEATHER_ICON_H + WEATHER_LABEL_GAP;
         const int tempY = labelY + WEATHER_LABEL_HEIGHT;
         
@@ -200,7 +200,7 @@ public:
         // Draw time labels
         tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
         for (int i = 0; i < 6; i++) {
-            int cx = (slotW * i) + (slotW / 2);
+            int cx = (int)round(slotW * (i + 0.5f));
             int hour = (startHour + i * 2) % 24;
             tft.drawCentreString(formatHour12(hour), cx, labelY, 2);
         }
@@ -208,12 +208,13 @@ public:
         // Draw temperature labels
         tft.setTextColor(TFT_CYAN, TFT_BLACK);
         for (int i = 0; i < 6; i++) {
-            int cx = (slotW * i) + (slotW / 2);
+            int cx = (int)round(slotW * (i + 0.5f));
             // Format temperature as integer with degree symbol (°C)
             String tempStr = String((int)round(temps[i]));
             tempStr += DEGREE_SYMBOL;
             tempStr += "C";
-            tft.drawCentreString(tempStr, cx, tempY, 2);
+            // Add small offset to visually center (°C adds asymmetry)
+            tft.drawCentreString(tempStr, cx + 4, tempY, 2);
         }
     }
     

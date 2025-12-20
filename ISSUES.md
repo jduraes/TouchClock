@@ -1,6 +1,16 @@
 # Known Issues
 
-## v1.0.2 (Current)
+## v1.0.8 (Current)
+
+### All Known Issues Resolved ✅
+No active issues. Recent improvements:
+- Temperature display now properly centered under weather icons (4px offset)
+- Light sensor sensitivity reduced with ADC_11db attenuation
+- Weather data includes temperature alongside icons
+
+---
+
+## v1.0.2
 
 ### Screen Backlight Flickering (3Hz) - RESOLVED ✅
 **Status:** FIXED  

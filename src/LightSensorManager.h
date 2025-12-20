@@ -179,7 +179,7 @@ public:
 
         // Configure ADC for light sensor
         pinMode(LIGHT_SENSOR_PIN, INPUT);
-        analogSetAttenuation(ADC_6db);   // Reduced sensitivity (0-2V range instead of 0-3.3V)
+        analogSetAttenuation(ADC_8db);  // Further attenuation (~0-3.6V range) to reduce sensitivity
         analogSetWidth(12);              // 12-bit resolution
 
         // Create and pin light polling task to Core 1

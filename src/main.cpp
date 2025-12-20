@@ -8,10 +8,12 @@
 #include "ChimeManager.h"
 #include "WeatherManager.h"
 
-// Single source of truth: implement appVersion()
-const char* appVersion() {
-    return "v1.0.6";
-}
+// Single source of truth: app version as a constant (and backward-compatible accessor)
+static constexpr char APP_VERSION[] = "v1.0.8";
+/**
+ * Returns the application's version string (from the APP_VERSION macro).
+ */
+inline const char* appVersion() { return APP_VERSION; }
 
 // --- Objects ---
 NetworkManager netMgr;
