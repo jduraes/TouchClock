@@ -49,35 +49,28 @@ void IRAM_ATTR chimeTimerHandler() {
     dacWrite(26, (uint8_t)sample);
 }
 
-// Westminster chime note frequencies
-// G4 = 392Hz, C5 = 523Hz, D5 = 587Hz, E5 = 659Hz
+// Westminster Quarters note frequencies - E Major key (Big Ben authentic)
+// B3 = 247Hz, E4 = 330Hz, F#4 = 370Hz, G#4 = 415Hz, E3 = 165Hz (hour strike)
+// Tempo: ~100 BPM, quarter note = 600ms, dotted quarter = 900ms
 
-// Westminster rhythm: dotted quarter (900ms), quarter (600ms)
-// Pattern: long-short-long-short per phrase
-const ChimeManager::Note ChimeManager::PHRASE1[4] = {
-    {392, 900}, // G4 - dotted quarter
-    {523, 600}, // C5 - quarter
-    {587, 900}, // D5 - dotted quarter
-    {392, 600}, // G4 - quarter
+// Complete Westminster Quarters sequence (all 4 quarters before hour strike)
+const ChimeManager::Note ChimeManager::WESTMINSTER_SEQUENCE[28] = {
+    // 1st Quarter (4 notes)
+    {415, 600}, {370, 600}, {330, 600}, {247, 900},
+    
+    // 2nd Quarter (8 notes)
+    {330, 600}, {415, 600}, {370, 600}, {247, 900},
+    {330, 600}, {370, 600}, {415, 600}, {330, 900},
+    
+    // 3rd Quarter (8 notes)
+    {415, 600}, {330, 600}, {370, 600}, {247, 900},
+    {247, 600}, {370, 600}, {415, 600}, {330, 900},
+    
+    // 4th Quarter (8 notes - full hour)
+    {415, 600}, {370, 600}, {330, 600}, {247, 900},
+    {330, 600}, {415, 600}, {370, 600}, {247, 900}
 };
 
-const ChimeManager::Note ChimeManager::PHRASE2[4] = {
-    {392, 900}, // G4 - dotted quarter
-    {587, 600}, // D5 - quarter
-    {659, 900}, // E5 - dotted quarter
-    {523, 600}, // C5 - quarter
-};
-
-const ChimeManager::Note ChimeManager::PHRASE3[4] = {
-    {392, 900}, // G4 - dotted quarter
-    {659, 600}, // E5 - quarter
-    {587, 900}, // D5 - dotted quarter
-    {523, 600}, // C5 - quarter
-};
-
-const ChimeManager::Note ChimeManager::PHRASE4[4] = {
-    {392, 900}, // G4 - dotted quarter
-    {523, 600}, // C5 - quarter
-    {587, 900}, // D5 - dotted quarter
-    {392, 600}, // G4 - quarter
-};
+// Hour strike note (Big Ben low E)
+const uint16_t ChimeManager::HOUR_STRIKE_FREQ = 165; // E3
+const uint16_t ChimeManager::HOUR_STRIKE_DURATION = 1000; // 1 second per strike

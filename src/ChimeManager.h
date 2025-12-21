@@ -19,17 +19,16 @@ class ChimeManager {
 
     // DAC and timer config
     hw_timer_t* _timer;
-    static constexpr uint32_t SAMPLE_RATE = 32000; // 32kHz sample rate for smooth sine interpolation
+    static constexpr uint32_t SAMPLE_RATE = 48000; // 48kHz sample rate for smooth sine interpolation
     static constexpr uint8_t DC_OFFSET = 128; // DAC center point
-    mutable uint8_t _volumePercent = 10; // Volume as percentage 0-100
+    mutable uint8_t _volumePercent = 5; // Volume as percentage 0-100
 
     struct Note { uint16_t freq; uint16_t ms; };
 
-    // Four phrases of the Westminster chime (G4, C5, D5, E5 combinations)
-    static const Note PHRASE1[4];
-    static const Note PHRASE2[4];
-    static const Note PHRASE3[4];
-    static const Note PHRASE4[4];
+    // Westminster Quarters complete sequence (E Major, Big Ben authentic)
+    static const Note WESTMINSTER_SEQUENCE[28];
+    static const uint16_t HOUR_STRIKE_FREQ;
+    static const uint16_t HOUR_STRIKE_DURATION;
 
     // Non-blocking playback state machine
     enum PlaybackState {
@@ -54,10 +53,7 @@ class ChimeManager {
     // Chime sequence tracking
     enum ChimePhase {
         PHASE_NONE,
-        PHASE_1,
-        PHASE_2,
-        PHASE_3,
-        PHASE_4,
+        PHASE_WESTMINSTER,  // Playing full Westminster Quarters sequence
         PHASE_PAUSE_BEFORE_STRIKES,  // 1.5 second pause before hour gongs
         PHASE_STRIKES,
         PHASE_COMPLETE
@@ -91,7 +87,7 @@ class ChimeManager {
     void startNextNote() {
         if (_inStrikeMode) {
             if (_strikeIndex < _strikeCount) {
-                startNote(392, 500); // G4 strike
+                startNote(HOUR_STRIKE_FREQ, HOUR_STRIKE_DURATION); // E3 Big Ben strike
                 _strikeIndex++;
                 return;
             } else {
@@ -103,41 +99,21 @@ class ChimeManager {
             }
         }
 
-        // Regular phrase playback
+        // Westminster sequence playback
         if (_sequenceIndex < _sequenceLength) {
             const Note& note = _currentSequence[_sequenceIndex];
             startNote(note.freq, note.ms);
             _sequenceIndex++;
         } else {
-            // Phrase complete, move to next phase
+            // Westminster sequence complete, move to pause before strikes
             advanceChimePhase();
         }
     }
 
     void advanceChimePhase() {
         switch (_chimePhase) {
-            case PHASE_1:
-                _chimePhase = PHASE_2;
-                _currentSequence = PHRASE2;
-                _sequenceLength = 4;
-                _sequenceIndex = 0;
-                startNextNote();
-                break;
-            case PHASE_2:
-                _chimePhase = PHASE_3;
-                _currentSequence = PHRASE3;
-                _sequenceLength = 4;
-                _sequenceIndex = 0;
-                startNextNote();
-                break;
-            case PHASE_3:
-                _chimePhase = PHASE_4;
-                _currentSequence = PHRASE4;
-                _sequenceLength = 4;
-                _sequenceIndex = 0;
-                startNextNote();
-                break;
-            case PHASE_4:
+            case PHASE_WESTMINSTER:
+                // Westminster complete, start pause before hour strikes
                 _chimePhase = PHASE_PAUSE_BEFORE_STRIKES;
                 _state = NOTE_GAP;
                 _noteStartMs = millis();  // Start the 1.5 second pause
@@ -161,9 +137,9 @@ class ChimeManager {
     void startChimeSequence(int strikes) {
         if (_state != IDLE) return; // Already playing
         
-        _chimePhase = PHASE_1;
-        _currentSequence = PHRASE1;
-        _sequenceLength = 4;
+        _chimePhase = PHASE_WESTMINSTER;
+        _currentSequence = WESTMINSTER_SEQUENCE;
+        _sequenceLength = 28;  // Full Westminster Quarters sequence
         _sequenceIndex = 0;
         _strikeCount = strikes;
         _inStrikeMode = false;
@@ -209,7 +185,7 @@ public:
             if (_chimePhase == PHASE_PAUSE_BEFORE_STRIKES) {
                 gapMs = 1500; // 1.5 second pause before hour gongs
             } else if (_inStrikeMode) {
-                gapMs = 200; // longer gap between strikes
+                gapMs = 1000; // longer gap between strikes
             } else if (_sequenceIndex >= _sequenceLength) {
                 gapMs = 400; // longer gap between phrases
             } else {
