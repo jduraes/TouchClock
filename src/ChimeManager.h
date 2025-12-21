@@ -73,8 +73,8 @@ class ChimeManager {
         // phaseIncrement = (freq * 2^32) / sampleRate
         chimePhaseIncrement = ((uint64_t)freq << 32) / SAMPLE_RATE;
         
-        // Set amplitude based on volume
-        chimeAmplitude = map(_volumePercent, 0, 100, 20, 100);  // Scaled amplitude for square wave
+        // Set amplitude based on volume (full 0-255 range for triangle wave)
+        chimeAmplitude = map(_volumePercent, 0, 100, 10, 255);
         
         // Start timer
         chimeTimerActive = true;

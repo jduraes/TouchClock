@@ -11,9 +11,28 @@ void IRAM_ATTR chimeTimerHandler() {
     if (!chimeTimerActive) return;
     
     chimePhaseAccumulator += chimePhaseIncrement;
-    uint8_t sample = ((chimePhaseAccumulator >> 31) & 1) ? (128 + chimeAmplitude) : (128 - chimeAmplitude);
+    
+    // Triangle wave: creates smooth ramp up/down unlike harsh square wave
+    // Phase from 0 to 2^32, extract upper 9 bits for linear ramp (0-511)
+    uint16_t phase = (chimePhaseAccumulator >> 23) & 0x1FF;  // 9-bit phase (0-511)
+    int16_t triangleValue;
+    
+    if (phase < 256) {
+        // First half: ramp up from 0 to 255
+        triangleValue = phase;
+    } else {
+        // Second half: ramp down from 255 to 0
+        triangleValue = 511 - phase;
+    }
+    
+    // Scale by amplitude and add DC offset
+    int16_t sample = (triangleValue * chimeAmplitude) / 255 + 128 - (chimeAmplitude / 2);
+    
+    // Clamp to DAC range
+    if (sample < 0) sample = 0;
     if (sample > 255) sample = 255;
-    dacWrite(26, sample);
+    
+    dacWrite(26, (uint8_t)sample);
 }
 
 // Westminster chime note frequencies
