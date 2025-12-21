@@ -22,6 +22,8 @@ class DisplayManager {
     // Clock & date
     const int CLOCK_Y = 65;         // centre Y for main time
     const int DATE_Y = 120;         // centre Y for date line
+    const int DATE_CLEAR_PAD = 2;   // pixels above/below to clear
+    const int DATE_CLEAR_HEIGHT = 20; // height of the cleared strip for date
 
     // Weather icons row
     const int WEATHER_BASE_Y = 150; // top of icons row
@@ -91,6 +93,8 @@ public:
     void updateDate(String dateStr) {
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.setTextSize(1);
+        // Clear a strip across the date area to avoid leftover pixels when text becomes shorter
+        tft.fillRect(0, DATE_Y - DATE_CLEAR_PAD, Lw, DATE_CLEAR_HEIGHT, TFT_BLACK);
         tft.drawCentreString(dateStr, Lw / 2, DATE_Y, 2);
     }
 
