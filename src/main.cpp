@@ -53,8 +53,9 @@ void setup() {
     // Pass null callback - RGB LED is disabled for now
     lightSensor.begin(&dispMgr, nullptr);
 
-    // Initialize chime (default speaker pin = 25 on CYD)
+    // Initialize chime (default speaker pin = 26 on CYD)
     chimeMgr.begin();
+    chimeMgr.setVolume(50);  // Set volume to 50%
 
     // Initialize touch manager (runs on Core 1)
     touchMgr.begin(&dispMgr);
