@@ -58,6 +58,7 @@ class ChimeManager {
         PHASE_2,
         PHASE_3,
         PHASE_4,
+        PHASE_PAUSE_BEFORE_STRIKES,  // 1.5 second pause before hour gongs
         PHASE_STRIKES,
         PHASE_COMPLETE
     };
@@ -137,6 +138,13 @@ class ChimeManager {
                 startNextNote();
                 break;
             case PHASE_4:
+                _chimePhase = PHASE_PAUSE_BEFORE_STRIKES;
+                _state = NOTE_GAP;
+                _noteStartMs = millis();  // Start the 1.5 second pause
+                // Don't call startNextNote() yet - pause first
+                break;
+            case PHASE_PAUSE_BEFORE_STRIKES:
+                // Pause complete, transition to strikes
                 _chimePhase = PHASE_STRIKES;
                 _inStrikeMode = true;
                 _strikeIndex = 0;
@@ -196,9 +204,11 @@ public:
                 return;
             }
         } else if (_state == NOTE_GAP) {
-            // Gap between notes in phrases (80ms for rhythm), between strikes (200ms), between phrases (400ms)
+            // Gap between notes in phrases (80ms for rhythm), between strikes (200ms), between phrases (400ms), before strikes (1500ms)
             unsigned long gapMs;
-            if (_inStrikeMode) {
+            if (_chimePhase == PHASE_PAUSE_BEFORE_STRIKES) {
+                gapMs = 1500; // 1.5 second pause before hour gongs
+            } else if (_inStrikeMode) {
                 gapMs = 200; // longer gap between strikes
             } else if (_sequenceIndex >= _sequenceLength) {
                 gapMs = 400; // longer gap between phrases
