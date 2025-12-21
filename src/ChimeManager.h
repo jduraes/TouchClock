@@ -19,7 +19,7 @@ class ChimeManager {
 
     // DAC and timer config
     hw_timer_t* _timer;
-    static constexpr uint32_t SAMPLE_RATE = 16000; // 16kHz sample rate
+    static constexpr uint32_t SAMPLE_RATE = 32000; // 32kHz sample rate for smooth sine interpolation
     static constexpr uint8_t DC_OFFSET = 128; // DAC center point
     mutable uint8_t _volumePercent = 10; // Volume as percentage 0-100
 
