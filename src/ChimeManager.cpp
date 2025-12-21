@@ -1,5 +1,21 @@
 #include "ChimeManager.h"
 
+// Global variables for DAC audio interrupt handler
+volatile bool chimeTimerActive = false;
+volatile uint32_t chimePhaseAccumulator = 0;
+volatile uint32_t chimePhaseIncrement = 0;
+volatile uint8_t chimeAmplitude = 0;
+
+// Global interrupt handler for DAC audio
+void IRAM_ATTR chimeTimerHandler() {
+    if (!chimeTimerActive) return;
+    
+    chimePhaseAccumulator += chimePhaseIncrement;
+    uint8_t sample = ((chimePhaseAccumulator >> 31) & 1) ? (128 + chimeAmplitude) : (128 - chimeAmplitude);
+    if (sample > 255) sample = 255;
+    dacWrite(26, sample);
+}
+
 // Westminster chime note frequencies
 // G4 = 392Hz, C5 = 523Hz, D5 = 587Hz, E5 = 659Hz
 

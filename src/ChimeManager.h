@@ -2,14 +2,25 @@
 #include <Arduino.h>
 #include <cmath>
 
-// Non-blocking Westminster/Big Ben style chimes using LEDC tone
-// CYD speaker is on GPIO26
+// Forward declarations for interrupt handler
+extern volatile bool chimeTimerActive;
+extern volatile uint32_t chimePhaseAccumulator;
+extern volatile uint32_t chimePhaseIncrement;
+extern volatile uint8_t chimeAmplitude;
+
+// Global interrupt handler
+void chimeTimerHandler();
+
+// Non-blocking Westminster/Big Ben style chimes using DAC output
+// CYD speaker is on GPIO26 (DAC_CHANNEL_2)
 class ChimeManager {
-    int _speakerPin = 26;  // CYD speaker on GPIO26
+    int _speakerPin = 26;  // CYD speaker on GPIO26 (DAC_CHANNEL_2)
     int _lastChimedHour = -1;
 
-    // LEDC config
-    const int _ledcChannel = 0;
+    // DAC and timer config
+    hw_timer_t* _timer;
+    static constexpr uint32_t SAMPLE_RATE = 16000; // 16kHz sample rate
+    static constexpr uint8_t DC_OFFSET = 128; // DAC center point
     mutable uint8_t _volumePercent = 10; // Volume as percentage 0-100
 
     struct Note { uint16_t freq; uint16_t ms; };
@@ -58,14 +69,22 @@ class ChimeManager {
         _noteDurationMs = durationMs;
         _state = PLAYING_NOTE;
         
-        // Use LEDC with volume control via duty cycle (0-255)
-        uint8_t duty = map(_volumePercent, 0, 100, 0, 255);
-        ledcSetup(_ledcChannel, freq, 8);
-        ledcWrite(_ledcChannel, duty);
+        // Calculate phase increment for frequency
+        // phaseIncrement = (freq * 2^32) / sampleRate
+        chimePhaseIncrement = ((uint64_t)freq << 32) / SAMPLE_RATE;
+        
+        // Set amplitude based on volume
+        chimeAmplitude = map(_volumePercent, 0, 100, 20, 100);  // Scaled amplitude for square wave
+        
+        // Start timer
+        chimeTimerActive = true;
     }
 
+    // Timer interrupt handler for DAC sample generation
     void stopNote() {
-        ledcWrite(_ledcChannel, 0); // Stop tone
+        chimeTimerActive = false;
+        chimePhaseAccumulator = 0;
+        dacWrite(26, DC_OFFSET); // Return to center voltage
     }
 
     void startNextNote() {
@@ -146,10 +165,20 @@ class ChimeManager {
 public:
     void begin(int speakerPin = 26) {
         _speakerPin = speakerPin;
-        // Setup LEDC
-        ledcSetup(_ledcChannel, 1000, 8);
-        ledcAttachPin(_speakerPin, _ledcChannel);
-        ledcWrite(_ledcChannel, 0);
+        
+        // Initialize DAC
+        dacWrite(_speakerPin, DC_OFFSET);
+        
+        // Setup hardware timer (Timer 0, prescaler 80 for 1MHz)
+        _timer = timerBegin(0, 80, true);
+        timerAttachInterrupt(_timer, &chimeTimerHandler, true);
+        timerAlarmWrite(_timer, 1000000 / SAMPLE_RATE, true); // Fire at SAMPLE_RATE Hz
+        timerAlarmEnable(_timer);
+        
+        chimeTimerActive = false;
+        chimePhaseAccumulator = 0;
+        chimePhaseIncrement = 0;
+        chimeAmplitude = 0;
     }
 
     // Must be called frequently from main loop for non-blocking audio generation
