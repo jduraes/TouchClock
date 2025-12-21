@@ -55,7 +55,7 @@ void setup() {
 
     // Initialize chime (default speaker pin = 26 on CYD)
     chimeMgr.begin();
-    chimeMgr.setVolume(50);  // Set volume to 50%
+    chimeMgr.setVolume(30);  // Set volume to 30%
 
     // Initialize touch manager (runs on Core 1)
     touchMgr.begin(&dispMgr);

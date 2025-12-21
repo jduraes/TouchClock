@@ -6,27 +6,29 @@ volatile uint32_t chimePhaseAccumulator = 0;
 volatile uint32_t chimePhaseIncrement = 0;
 volatile uint8_t chimeAmplitude = 0;
 
+// Compact 32-sample sine lookup table in flash (PROGMEM) - only 32 bytes
+// Values are 0-127 for half-cycle (0° to 180°), symmetry handles full cycle
+static const int8_t PROGMEM sineTable32[32] = {
+    0, 12, 24, 35, 45, 55, 63, 71,
+    78, 83, 87, 90, 91, 91, 90, 87,
+    83, 78, 71, 63, 55, 45, 35, 24,
+    12, 0, -12, -24, -35, -45, -55, -63
+};
+
 // Global interrupt handler for DAC audio
 void IRAM_ATTR chimeTimerHandler() {
     if (!chimeTimerActive) return;
     
     chimePhaseAccumulator += chimePhaseIncrement;
     
-    // Triangle wave: creates smooth ramp up/down unlike harsh square wave
-    // Phase from 0 to 2^32, extract upper 9 bits for linear ramp (0-511)
-    uint16_t phase = (chimePhaseAccumulator >> 23) & 0x1FF;  // 9-bit phase (0-511)
-    int16_t triangleValue;
+    // Extract phase: upper 5 bits for 32-entry table (0-31)
+    uint8_t phaseIndex = (chimePhaseAccumulator >> 27) & 0x1F;
     
-    if (phase < 256) {
-        // First half: ramp up from 0 to 255
-        triangleValue = phase;
-    } else {
-        // Second half: ramp down from 255 to 0
-        triangleValue = 511 - phase;
-    }
+    // Read sine value from flash
+    int8_t sineValue = pgm_read_byte(&sineTable32[phaseIndex]);
     
     // Scale by amplitude and add DC offset
-    int16_t sample = (triangleValue * chimeAmplitude) / 255 + 128 - (chimeAmplitude / 2);
+    int16_t sample = (sineValue * chimeAmplitude) / 64 + 128;
     
     // Clamp to DAC range
     if (sample < 0) sample = 0;
