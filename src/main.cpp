@@ -157,6 +157,9 @@ void loop() {
     // Update network server (handle HTTP requests from provisioning or config pages)
     netMgr.update();
 
+    // Keep attempting NTP sync until successful
+    timeMgr.maybeEnsureSynced(&dispMgr);
+
     // Check if location was updated via config page - force immediate weather refresh
     if (netMgr.checkAndClearLocationUpdated()) {
         Serial.println("[Main Loop] Location updated flag detected, forcing weather refresh");
