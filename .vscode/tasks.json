@@ -28,7 +28,7 @@
 		{
 			"label": "Build and Upload",
 			"type": "shell",
-			"command": "platformio run --target upload --upload-port COM6",
+			"command": "platformio run --target upload --upload-port COM4",
 			"group": {
 				"kind": "build",
 				"isDefault": true
@@ -58,6 +58,13 @@
 			"problemMatcher": [
 				"$platformio"
 			],
+			"group": "build"
+		},
+		{
+			"label": "Upload and Monitor COM4",
+			"type": "shell",
+			"command": "taskkill /F /IM python.exe /T; C:\\Users\\miguel\\.platformio\\penv\\Scripts\\platformio.exe run --target upload --upload-port COM4; C:\\Users\\miguel\\.platformio\\penv\\Scripts\\platformio.exe device monitor --port COM4 --baud 115200",
+			"isBackground": false,
 			"group": "build"
 		}
 	]

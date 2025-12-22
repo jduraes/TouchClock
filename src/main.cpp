@@ -8,6 +8,20 @@
 #include "ChimeManager.h"
 #include "WeatherManager.h"
 
+// Helper functions to avoid circular dependency between NetworkManager and WeatherManager
+void weatherManagerReload(void* mgr) {
+    if (mgr) {
+        static_cast<WeatherManager*>(mgr)->reloadLocation();
+    }
+}
+
+bool weatherManagerGeocode(void* mgr, const String& query, float& outLat, float& outLon, String& outTown) {
+    if (mgr) {
+        return static_cast<WeatherManager*>(mgr)->verifyAndGeocode(query, outLat, outLon, outTown);
+    }
+    return false;
+}
+
 // Single source of truth: app version as a constant (and backward-compatible accessor)
 static constexpr char APP_VERSION[] = "v1.0.8";
 /**
@@ -63,6 +77,7 @@ void setup() {
 
     // Pass display to NetworkManager so it can show connection progress
     netMgr.setDisplay(&dispMgr);
+    netMgr.setWeatherManager(&weatherMgr);
     
     // Check if we have stored credentials first
     if (netMgr.hasStoredCredentials()) {
@@ -73,32 +88,50 @@ void setup() {
         dispMgr.showStatus("Waiting for WiFi setup...");
     }
     
-    // Try to connect (will use stored credentials if available, or start provisioning)
-    bool ok = netMgr.begin();
+    // Try to connect (will use stored credentials if available, or start provisioning AP)
+    // If AP mode needed, this returns false but the HTTP server is now running
+    bool connected = netMgr.begin();
     
-    // After connection attempt, clear any instructions and show network status
-    if (ok && WiFi.status() == WL_CONNECTED) {
+    static bool timeInitialized = false;
+    
+    // If we have stored credentials, wait for connection
+    if (!connected && netMgr.hasStoredCredentials()) {
+        // Retry connection attempt
+        unsigned long connStart = millis();
+        while (WiFi.status() != WL_CONNECTED && millis() - connStart < 30000) {
+            netMgr.update();  // Handle HTTP requests
+            delay(100);
+        }
+        connected = (WiFi.status() == WL_CONNECTED);
+    }
+    
+    // If connected or provisioned, proceed with initialization
+    if (connected || netMgr.isProvisioned()) {
         dispMgr.clearInstructions();
-        dispMgr.showStatus(String("WiFi: ") + WiFi.SSID());
-        
-        // FIX: Disable WiFi power saving to prevent SPI bus contention/display flickering
-        // WiFi power saving causes frequent radio wakeups that interfere with SPI display timing
-        WiFi.setSleep(WIFI_PS_NONE);
-        
-        // Now sync time from NTP
+        if (WiFi.status() == WL_CONNECTED) {
+            dispMgr.showStatus(String("WiFi: ") + WiFi.SSID());
+            WiFi.setSleep(WIFI_PS_NONE);
+            if (!timeInitialized) {
+                timeMgr.begin(&dispMgr);
+                timeInitialized = true;
+            }
+        }
+    }
+    
+    // Initialize display and weather even if WiFi not ready yet
+    if (!timeInitialized && WiFi.status() == WL_CONNECTED) {
         timeMgr.begin(&dispMgr);
-        // Static interface was already drawn at startup; avoid redundant redraws
-        
-        // Display first time and date immediately
+        timeInitialized = true;
+        weatherMgr.refresh(&dispMgr);
+    }
+    
+    if (timeInitialized) {
         String timeStr = timeMgr.getFormattedTime();
         String dateStr = timeMgr.getFormattedDate();
         dispMgr.updateClock(timeStr);
         dispMgr.updateDate(dateStr);
-        weatherMgr.refresh(&dispMgr);  // Fetch and draw rolling forecast starting ~2h from now
         Serial.println(timeStr);
         Serial.println(dateStr);
-    } else {
-        dispMgr.showStatus("WiFi Failed");
     }
 }
 
@@ -120,6 +153,15 @@ void loop() {
 
     // Update non-blocking chime audio generation
     chimeMgr.update();
+
+    // Update network server (handle HTTP requests from provisioning or config pages)
+    netMgr.update();
+
+    // Check if location was updated via config page - force immediate weather refresh
+    if (netMgr.checkAndClearLocationUpdated()) {
+        Serial.println("[Main Loop] Location updated flag detected, forcing weather refresh");
+        weatherMgr.refresh(&dispMgr);
+    }
 
     // Get current time with millisecond precision
     unsigned long currentMillis = millis();
@@ -171,7 +213,7 @@ void loop() {
             String newStatus;
             switch (statusIndex) {
                 case 0:
-                    newStatus = String("Connected to: ") + WiFi.SSID();
+                    newStatus = String("Connected to: ") + WiFi.SSID() + " - IP: " + WiFi.localIP().toString();
                     break;
                 case 1:
                     newStatus = timeMgr.isSynced() ? String("Time from: ") + timeMgr.getNtpServer() : "WARNING: Time sync FAILED!";
@@ -181,6 +223,14 @@ void loop() {
             dispMgr.showStatus(newStatus);  // Only redraws if different
             statusIndex = (statusIndex + 1) % 2;  // Cycle through 2 messages
         }
+    }
+
+    // Update town name display in header
+    static String lastDisplayedTown = "";
+    String currentTown = weatherMgr.getTownName();
+    if (currentTown != lastDisplayedTown) {
+        lastDisplayedTown = currentTown;
+        dispMgr.updateHeaderText("TouchClock", currentTown);
     }
     
     delay(5);

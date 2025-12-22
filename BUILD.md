@@ -70,6 +70,7 @@ platformio device monitor --port COM6 --baud 115200
 ```
 
 ### Troubleshooting Upload Issues
+0. **Serial monitor busy** → If `platformio device monitor` (or any other terminal) is attached to COM4, close/kill it before uploading, otherwise upload will fail with "port doesn't exist" or timeouts.
 1. **"Port doesn't exist"** → Reconnect USB cable, wait 2 sec, retry
 2. **"Device is not in bootloader mode"** → Press EN (reset) button on board
 3. **"Hash mismatch"** → Try a clean build and re-upload

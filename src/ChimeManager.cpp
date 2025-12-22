@@ -5,6 +5,10 @@ volatile bool chimeTimerActive = false;
 volatile uint32_t chimePhaseAccumulator = 0;
 volatile uint32_t chimePhaseIncrement = 0;
 volatile uint8_t chimeAmplitude = 0;
+// Failsafe tracking to end notes by sample count
+volatile uint32_t chimeSampleCount = 0;
+volatile uint32_t chimeNoteSampleTarget = 0;
+volatile bool chimeNoteCompleted = false;
 
 // Complete 64-sample sine lookup table in flash (PROGMEM) - full 360° cycle
 // Peak amplitude at ±91 (70% of 8-bit range, safe for mixing)
@@ -31,6 +35,15 @@ static const int8_t PROGMEM sineTable64[64] = {
 void IRAM_ATTR chimeTimerHandler() {
     if (!chimeTimerActive) return;
     
+    // Increment sample counter and check for note completion
+    chimeSampleCount++;
+    if (chimeNoteSampleTarget != 0 && chimeSampleCount >= chimeNoteSampleTarget) {
+        chimeTimerActive = false;      // stop generating samples
+        chimeNoteCompleted = true;     // signal completion to main loop
+        // Do not call heavy functions here; update() will finalize
+        return;
+    }
+
     chimePhaseAccumulator += chimePhaseIncrement;
     
     // Extract phase: upper 6 bits for 64-entry table (0-63)
@@ -51,24 +64,23 @@ void IRAM_ATTR chimeTimerHandler() {
 
 // Westminster Quarters note frequencies - E Major key (Big Ben authentic)
 // B3 = 247Hz, E4 = 330Hz, F#4 = 370Hz, G#4 = 415Hz, E3 = 165Hz (hour strike)
-// Tempo: ~100 BPM, quarter note = 600ms, dotted quarter = 900ms
+// Tempo: ~100 BPM, quarter note = 600ms, half note = 1200ms
 
-// Complete Westminster Quarters sequence (all 4 quarters before hour strike)
-const ChimeManager::Note ChimeManager::WESTMINSTER_SEQUENCE[28] = {
-    // 1st Quarter (4 notes)
-    {415, 600}, {370, 600}, {330, 600}, {247, 900},
-    
-    // 2nd Quarter (8 notes)
-    {330, 600}, {415, 600}, {370, 600}, {247, 900},
-    {330, 600}, {370, 600}, {415, 600}, {330, 900},
-    
-    // 3rd Quarter (8 notes)
-    {415, 600}, {330, 600}, {370, 600}, {247, 900},
-    {247, 600}, {370, 600}, {415, 600}, {330, 900},
-    
-    // 4th Quarter (8 notes - full hour)
-    {415, 600}, {370, 600}, {330, 600}, {247, 900},
-    {330, 600}, {415, 600}, {370, 600}, {247, 900}
+// Full hour: phrases 2, 3, 4, 5 (each measure in 5/4: q, q, q, h)
+// Measures per score: 
+// 1) e4, gis4, fis4, b3 (half) 
+// 2) e4, fis4, gis4, e4 (half)
+// 3) gis4, e4, fis4, b3 (half)
+// 4) b3, fis4, gis4, e4 (half)
+const ChimeManager::Note ChimeManager::WESTMINSTER_SEQUENCE[16] = {
+    // Measure 1
+    {330, 600}, {415, 600}, {370, 600}, {247, 1200},
+    // Measure 2
+    {330, 600}, {370, 600}, {415, 600}, {330, 1200},
+    // Measure 3
+    {415, 600}, {330, 600}, {370, 600}, {247, 1200},
+    // Measure 4 (fis' is octave up: F#5)
+    {247, 600}, {370, 600}, {415, 600}, {330, 1200}
 };
 
 // Hour strike note (Big Ben low E)

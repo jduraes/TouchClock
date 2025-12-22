@@ -7,6 +7,9 @@ extern volatile bool chimeTimerActive;
 extern volatile uint32_t chimePhaseAccumulator;
 extern volatile uint32_t chimePhaseIncrement;
 extern volatile uint8_t chimeAmplitude;
+extern volatile uint32_t chimeSampleCount;
+extern volatile uint32_t chimeNoteSampleTarget;
+extern volatile bool chimeNoteCompleted;
 
 // Global interrupt handler
 void chimeTimerHandler();
@@ -19,14 +22,14 @@ class ChimeManager {
 
     // DAC and timer config
     hw_timer_t* _timer;
-    static constexpr uint32_t SAMPLE_RATE = 48000; // 48kHz sample rate for smooth sine interpolation
+    static constexpr uint32_t SAMPLE_RATE = 44000; // 44kHz sample rate for smooth sine interpolation
     static constexpr uint8_t DC_OFFSET = 128; // DAC center point
     mutable uint8_t _volumePercent = 5; // Volume as percentage 0-100
 
     struct Note { uint16_t freq; uint16_t ms; };
 
-    // Westminster Quarters complete sequence (E Major, Big Ben authentic)
-    static const Note WESTMINSTER_SEQUENCE[28];
+    // Westminster Quarters full-hour sequence (E Major, Big Ben authentic)
+    static const Note WESTMINSTER_SEQUENCE[16];
     static const uint16_t HOUR_STRIKE_FREQ;
     static const uint16_t HOUR_STRIKE_DURATION;
 
@@ -37,28 +40,28 @@ class ChimeManager {
         NOTE_GAP
     };
 
-    PlaybackState _state = IDLE;
+    volatile PlaybackState _state = IDLE; // shared across cores
     const Note* _currentSequence = nullptr;
-    int _sequenceLength = 0;
-    int _sequenceIndex = 0;
-    int _strikeCount = 0;
-    int _strikeIndex = 0;
-    bool _inStrikeMode = false;
+    volatile int _sequenceLength = 0;
+    volatile int _sequenceIndex = 0;
+    volatile int _strikeCount = 0;
+    volatile int _strikeIndex = 0;
+    volatile bool _inStrikeMode = false;
     
     // Current note playback state
-    uint16_t _currentFreq = 0;
-    unsigned long _noteStartMs = 0;
-    unsigned long _noteDurationMs = 0;
+    volatile uint16_t _currentFreq = 0;
+    volatile unsigned long _noteStartMs = 0;
+    volatile unsigned long _noteDurationMs = 0;
     
     // Chime sequence tracking
     enum ChimePhase {
         PHASE_NONE,
-        PHASE_WESTMINSTER,  // Playing full Westminster Quarters sequence
+        PHASE_WESTMINSTER,           // Playing full Westminster Quarters sequence
         PHASE_PAUSE_BEFORE_STRIKES,  // 1.5 second pause before hour gongs
         PHASE_STRIKES,
         PHASE_COMPLETE
     };
-    ChimePhase _chimePhase = PHASE_NONE;
+    volatile ChimePhase _chimePhase = PHASE_NONE; // accessed from multiple cores
 
     void startNote(uint16_t freq, uint16_t durationMs) {
         _currentFreq = freq;
@@ -72,6 +75,11 @@ class ChimeManager {
         
         // Set amplitude based on volume (0-100% maps to 0-127 for sine wave)
         chimeAmplitude = map(_volumePercent, 0, 100, 0, 127);
+        
+        // Initialize failsafe sample-count target
+        chimeSampleCount = 0;
+        chimeNoteSampleTarget = ((uint32_t)durationMs * SAMPLE_RATE) / 1000;
+        chimeNoteCompleted = false;
         
         // Start timer
         chimeTimerActive = true;
@@ -139,7 +147,7 @@ class ChimeManager {
         
         _chimePhase = PHASE_WESTMINSTER;
         _currentSequence = WESTMINSTER_SEQUENCE;
-        _sequenceLength = 28;  // Full Westminster Quarters sequence
+        _sequenceLength = 16;  // Full-hour Westminster sequence (phrases 2-5)
         _sequenceIndex = 0;
         _strikeCount = strikes;
         _inStrikeMode = false;
@@ -167,9 +175,31 @@ public:
 
     // Must be called frequently from main loop for non-blocking audio generation
     void update() {
-        if (_state == IDLE) return;
-
+        static unsigned long lastIdleLog = 0;
         unsigned long nowMs = millis();
+
+        // Handle ISR signaled completion regardless of state
+        if (chimeNoteCompleted) {
+            chimeNoteCompleted = false;
+            stopNote();
+            _state = NOTE_GAP;
+            _noteStartMs = nowMs;
+        }
+
+        // Failsafe: if audio is active but state machine is idle and duration passed, stop and enter gap
+        if (chimeTimerActive && (_state == IDLE)) {
+            if (nowMs - _noteStartMs >= _noteDurationMs && _noteDurationMs > 0) {
+                stopNote();
+                _state = NOTE_GAP;
+                _noteStartMs = nowMs;
+            }
+        }
+
+        if (_state == IDLE) {
+            return;
+        }
+
+        
 
         if (_state == PLAYING_NOTE) {
             // Check if note duration complete
@@ -180,16 +210,14 @@ public:
                 return;
             }
         } else if (_state == NOTE_GAP) {
-            // Gap between notes in phrases (80ms for rhythm), between strikes (200ms), between phrases (400ms), before strikes (1500ms)
+            // Gap between notes in phrases (80ms for rhythm), between strikes (1000ms), before strikes (1500ms)
             unsigned long gapMs;
             if (_chimePhase == PHASE_PAUSE_BEFORE_STRIKES) {
                 gapMs = 1500; // 1.5 second pause before hour gongs
             } else if (_inStrikeMode) {
-                gapMs = 1000; // longer gap between strikes
-            } else if (_sequenceIndex >= _sequenceLength) {
-                gapMs = 400; // longer gap between phrases
+                gapMs = 1000; // gap between hour strikes
             } else {
-                gapMs = 80; // normal inter-note gap
+                gapMs = 80; // normal inter-note gap in Westminster sequence
             }
             if (nowMs - _noteStartMs >= gapMs) {
                 startNextNote();

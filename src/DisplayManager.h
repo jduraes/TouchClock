@@ -71,12 +71,18 @@ public:
         updateHeaderText("TouchClock");
     }
 
-    // Redraws the top bar title, divider line, and version label
-    void updateHeaderText(const String& text) {
+    // Redraws the top bar title, divider line, town name, and version label
+    void updateHeaderText(const String& text, const String& townName = "") {
         tft.fillRect(0, 0, Lw, HEADER_HEIGHT, TFT_BLACK);
         tft.setTextColor(TFT_YELLOW, TFT_BLACK);
         tft.drawCentreString(text, Lw / 2, HEADER_TITLE_Y, 4);
         tft.drawFastHLine(0, HEADER_DIVIDER_Y, Lw, TFT_BLUE);
+
+        // Draw town name in tiny blue font at top left, above the blue line
+        if (townName.length() > 0) {
+            tft.setTextColor(TFT_BLUE, TFT_BLACK);
+            tft.drawString(townName, 3, HEADER_VERSION_Y, 1);
+        }
 
         // Draw version in tiny blue font at top right, above the blue line
         tft.setTextColor(TFT_BLUE, TFT_BLACK);
