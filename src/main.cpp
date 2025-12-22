@@ -164,6 +164,8 @@ void loop() {
     if (netMgr.checkAndClearLocationUpdated()) {
         Serial.println("[Main Loop] Location updated flag detected, forcing weather refresh");
         weatherMgr.refresh(&dispMgr);
+        // Refresh timezone for new coordinates and resync time
+        timeMgr.refreshTimezone(weatherMgr.getLatitude(), weatherMgr.getLongitude(), &dispMgr);
     }
 
     // Get current time with millisecond precision
