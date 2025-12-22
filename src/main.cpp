@@ -23,7 +23,7 @@ bool weatherManagerGeocode(void* mgr, const String& query, float& outLat, float&
 }
 
 // Single source of truth: app version as a constant (and backward-compatible accessor)
-static constexpr char APP_VERSION[] = "v1.0.8";
+static constexpr char APP_VERSION[] = "v1.0.9";
 /**
  * Returns the application's version string (from the APP_VERSION macro).
  */

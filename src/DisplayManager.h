@@ -78,10 +78,14 @@ public:
         tft.drawCentreString(text, Lw / 2, HEADER_TITLE_Y, 4);
         tft.drawFastHLine(0, HEADER_DIVIDER_Y, Lw, TFT_BLUE);
 
-        // Draw town name in tiny blue font at top left, above the blue line
+        // Draw town name in tiny blue font at top left, above the blue line (truncate to 15 chars)
         if (townName.length() > 0) {
+            String shortTown = townName;
+            if (shortTown.length() > 15) {
+                shortTown = shortTown.substring(0, 15);
+            }
             tft.setTextColor(TFT_BLUE, TFT_BLACK);
-            tft.drawString(townName, 3, HEADER_VERSION_Y, 1);
+            tft.drawString(shortTown, 3, HEADER_VERSION_Y, 1);
         }
 
         // Draw version in tiny blue font at top right, above the blue line
